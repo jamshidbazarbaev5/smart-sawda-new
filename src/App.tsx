@@ -135,6 +135,13 @@ function App() {
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/unauthorized" element={
+              <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+                <h1 className="text-2xl font-bold">Доступ запрещён</h1>
+                <p className="text-gray-600">У вас нет прав для доступа к этой странице</p>
+                <a href="/login" className="text-blue-500 hover:underline">Войти как другой пользователь</a>
+              </div>
+            } />
 
             {/* Protected routes wrapped in Layout */}
             <Route

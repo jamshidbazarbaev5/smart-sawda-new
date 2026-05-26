@@ -138,7 +138,7 @@ export interface Product {
 }
 
 // API endpoints
-const PRODUCT_URL = "api/v2/products/";
+const PRODUCT_URL = "products/";
 
 // Create product API hooks using the factory function
 export const {

@@ -333,7 +333,7 @@ export default function ProductsPage() {
     }
     setIsSearchingProducts(true);
     try {
-      const response = await api.get(`api/v2/products/?search=${query}`);
+      const response = await api.get(`products/?search=${query}`);
       const results = response.data.results || response.data || [];
       setProductSearchResults(results);
     } catch (error) {
@@ -368,7 +368,7 @@ export default function ProductsPage() {
     if (!product.id) return;
     setAssigningProductId(product.id);
     try {
-      await api.patch(`api/v2/products/${product.id}/`, {
+      await api.patch(`products/${product.id}/`, {
         barcode: scannedBarcode,
       });
       toast.success("Штрих-код успешно присвоен товару");

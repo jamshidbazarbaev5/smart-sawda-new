@@ -38,22 +38,20 @@
 
         console.log("[AuthContext] Raw user data role:", userData.role, "role_name:", userData.role_name, "roleName:", userData.roleName);
 
-        // v2 API returns role as numeric ID + role_name string
-        // Normalize so currentUser.role matches what PrivateRoute expects
-        const roleName = userData.role_name || userData.roleName;
-        if (roleName) {
-          userData.role = roleName;
+        // v2 API returns role in various formats:
+        //   - { id: 1, name: "Админ", code: "admin" } (object)
+        //   - 1 (numeric ID) + role_name/"Админ" (string)
+        // Normalize so currentUser.role is always the role name string
+        if (typeof userData.role === 'object' && userData.role?.name) {
+          userData.role = userData.role.name;
+        } else {
+          const roleName = userData.role_name || userData.roleName;
+          if (roleName) {
+            userData.role = roleName;
+          }
         }
         if (typeof userData.role === 'number') {
           userData.role = String(userData.role);
-        }
-        // Map "Админ" -> "Администратор" for backward compat with PrivateRoute checks
-        if (userData.role === "Админ") {
-          userData.role = "Администратор";
-        }
-        // Also handle "admin" code -> "Администратор"
-        if (userData.role === "admin") {
-          userData.role = "Администратор";
         }
 
         console.log("[AuthContext] Normalized user role:", userData.role);

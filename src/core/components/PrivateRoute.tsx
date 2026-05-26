@@ -16,8 +16,9 @@ export function  PrivateRoute({ children, allowedRoles }: PrivateRouteProps) {
     if (!currentUser) return false;
     // Check for superuser first
     if (currentUser.is_superuser) return true;
-    // Then check for administrator role
-    if (currentUser.role === "Администратор") return true;
+    // Admin role - access to everything
+    const adminRoles = ["Администратор", "Админ", "admin"];
+    if (adminRoles.includes(currentUser.role)) return true;
     if (currentUser.role === "Продавец") {
       const accessibleRoutes = [
         "/sales",

@@ -614,7 +614,7 @@ export default function CreateProduct() {
           >
             {t("common.add") || "Добавить"}
           </button>
-        </div>
+        </div>)}
 
         {/* Initial Stock Section */}
         {showInitialStock && (

@@ -2,19 +2,23 @@ import { useNavigate } from 'react-router-dom';
 import { ResourceForm } from '../helpers/ResourceForm';
 import { useTranslation } from 'react-i18next';
 import { useGetStores } from '../api/store';
+import { useGetRoles } from '../api/role';
 import { toast } from 'sonner';
 import { useCreateUser } from '../api/user';
 
 interface UserFormData {
   name: string;
   phone_number: string;
-  role: string;
+  role: number;
   password: string;
   store: number;
-  can_view_quantity:boolean;
-  sale_period: string;
+  can_view_quantity: boolean;
+  can_view_cost_price: boolean;
+  can_view_profit: boolean;
+  fixed_salary?: string;
+  sales_percentage?: string;
   is_active: boolean;
-  is_mobile_user:boolean;
+  is_mobile_user: boolean;
 }
 
 export default function CreateUser() {
@@ -22,9 +26,10 @@ export default function CreateUser() {
   const createStaff = useCreateUser();
   const { t } = useTranslation();
   const { data: storesData } = useGetStores({});
+  const { data: rolesData } = useGetRoles({});
   const stores = Array.isArray(storesData) ? storesData : storesData?.results || [];
+  const roles = Array.isArray(rolesData) ? rolesData : rolesData?.results || [];
 
-  // Custom mask for +998 phone numbers, no spaces
   const formatUzPhone = (value: string) => {
     let digits = value.replace(/\D/g, '');
     if (digits.startsWith('998')) digits = digits.slice(3);
@@ -57,10 +62,7 @@ export default function CreateUser() {
       type: 'select',
       placeholder: t('placeholders.select_role'),
       required: true,
-      options: [
-        { value: 'Администратор', label: t('roles.admin') },
-        { value: 'Продавец', label: t('roles.seller') },
-      ],
+      options: roles.map((r: any) => ({ value: r.id, label: r.name })),
     },
     {
       name: 'password',
@@ -75,10 +77,7 @@ export default function CreateUser() {
       type: 'select',
       placeholder: t('placeholders.select_store'),
       required: true,
-      options: stores.map(store => ({
-        value: store.id,
-        label: store.name
-      }))
+      options: stores.map(store => ({ value: store.id, label: store.name })),
     },
     {
       name: 'is_active',
@@ -117,38 +116,65 @@ export default function CreateUser() {
       ],
     },
     {
-      name: 'sale_period',
-      label: t('forms.sale_period'),
+      name: 'can_view_cost_price',
+      label: t('forms.can_view_cost_price'),
       type: 'select',
-      placeholder: t('placeholders.select_sale_period'),
+      placeholder: t('placeholders.select_permission'),
       required: true,
+      defaultValue: true,
       options: [
-        { value: 'day', label: t('sale_period.day') },
-        { value: 'week', label: t('sale_period.week') },
-        { value: 'all', label: t('sale_period.all') },
+        { value: true, label: t('common.yes') },
+        { value: false, label: t('common.no') },
       ],
-    }
+    },
+    {
+      name: 'can_view_profit',
+      label: t('forms.can_view_profit'),
+      type: 'select',
+      placeholder: t('placeholders.select_permission'),
+      required: true,
+      defaultValue: true,
+      options: [
+        { value: true, label: t('common.yes') },
+        { value: false, label: t('common.no') },
+      ],
+    },
+    {
+      name: 'fixed_salary',
+      label: t('forms.fixed_salary'),
+      type: 'text',
+      placeholder: t('placeholders.enter_salary'),
+    },
+    {
+      name: 'sales_percentage',
+      label: t('forms.sales_percentage'),
+      type: 'text',
+      placeholder: t('placeholders.enter_percentage'),
+    },
   ];
 
-  const handleSubmit = async (data: UserFormData) => {
+  const handleSubmit = async (data: any) => {
     try {
-      // Transform the data to match the staff creation endpoint requirements
       const staffData = {
-          name: data.name,
-          phone_number: data.phone_number,
-          role: data.role,
-          password: data.password,
-          is_mobile_user: data.is_mobile_user,
-          can_view_quantity: data.can_view_quantity !== undefined ? Boolean(data.can_view_quantity) : true,
-          sale_period: data.sale_period,
-          store_write: Number(data.store),
-          is_active: Boolean(data.is_active)
+        name: data.name,
+        phone_number: data.phone_number,
+        role: Number(data.role),
+        password: data.password,
+        store: Number(data.store),
+        is_mobile_user: data.is_mobile_user === "true" || data.is_mobile_user === true,
+        is_active: data.is_active === "true" || data.is_active === true,
+        can_view_quantity: data.can_view_quantity === "true" || data.can_view_quantity === true,
+        can_view_cost_price: data.can_view_cost_price === "true" || data.can_view_cost_price === true,
+        can_view_profit: data.can_view_profit === "true" || data.can_view_profit === true,
+        fixed_salary: data.fixed_salary || undefined,
+        sales_percentage: data.sales_percentage || undefined,
       };
 
       await createStaff.mutateAsync(staffData as any);
       toast.success(t('messages.success.created', { item: t('navigation.users') }));
       navigate('/users');
     } catch (error) {
+      console.error(error);
     }
   };
 

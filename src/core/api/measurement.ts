@@ -1,27 +1,16 @@
 import { createResourceApiHooks } from '../helpers/createResourceApi';
 
-// Types
 export interface Measurement {
   id?: number;
-  measurement_name: string;
+  name: string;
   short_name?: string;
-  store_write: number;
-  store_read?: {
-    id: number;
-    name: string;
-    address: string;
-    phone_number: string;
-    created_at: string;
-    is_main: boolean;
-    parent_store: number | null;
-    owner: number;
-  };
+  is_system?: boolean;
+  is_active?: boolean;
+  measurement_name?: string;
 }
 
-// API endpoints
-const MEASUREMENT_URL = 'items/measurement/';
+const MEASUREMENT_URL = 'units/';
 
-// Create measurement API hooks using the factory function
 export const {
   useGetResources: useGetMeasurements,
   useGetResource: useGetMeasurement,

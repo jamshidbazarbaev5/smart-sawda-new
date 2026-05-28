@@ -8,7 +8,7 @@ import { type Category, useGetCategories } from '../api/category';
 const columns = (t: any) => [
   {
     header: t('forms.category_name'),
-    accessorKey: 'category_name',
+    accessorKey: 'name',
   },
   {
     header: t('forms.attributes'),
@@ -18,7 +18,7 @@ const columns = (t: any) => [
       const attributesRead = category?.attributes_read || [];
       
       // Debug logging
-      console.log('Category:', category?.category_name, 'Attributes:', attributesRead);
+      console.log('Category:', category?.name, 'Attributes:', attributesRead);
       
       if (!attributesRead || attributesRead.length === 0) {
         return <span className="text-gray-400">-</span>;
@@ -57,7 +57,7 @@ export default function CategoriesPage() {
   const { t } = useTranslation();
   const { data: categoriesData, isLoading } = useGetCategories({
     params: {
-      category_name: searchTerm,
+      name: searchTerm,
       page: currentPage
     }
   });

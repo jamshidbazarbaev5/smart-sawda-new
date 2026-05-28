@@ -1,4 +1,75 @@
-import api from "./api";
+import { createResourceApiHooks } from '../helpers/createResourceApi';
+import api from './api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+export interface Shift {
+  id?: number;
+  store: number;
+  store_name?: string;
+  register: number;
+  cashier: number;
+  cashier_name?: string;
+  opened_at: string;
+  closed_at?: string | null;
+  opening_cash: string;
+  closing_cash?: string;
+  opening_comment?: string;
+  closing_comment?: string;
+  is_active: boolean;
+  is_awaiting_approval: boolean;
+  is_approved: boolean;
+}
+
+export interface ShiftCreateInput {
+  store: number;
+  register: number;
+  cashier: number;
+  opening_cash: string;
+  opening_comment?: string;
+}
+
+export interface CloseShiftInput {
+  closing_cash: string;
+  closing_comment?: string;
+}
+
+const SHIFT_URL = 'shifts/';
+
+export const {
+  useGetResources: useGetShifts,
+  useGetResource: useGetShift,
+  useCreateResource: useCreateShift,
+  useUpdateResource: useUpdateShift,
+  useDeleteResource: useDeleteShift,
+} = createResourceApiHooks<Shift>(SHIFT_URL, 'shifts');
+
+export const useApproveShift = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await api.post(`${SHIFT_URL}${id}/approve/`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shifts'] });
+    },
+  });
+};
+
+export const useCloseShift = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: CloseShiftInput }) => {
+      const response = await api.post(`${SHIFT_URL}${id}/close/`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shifts'] });
+    },
+  });
+};
+
+// --- v1 backward compatibility ---
 
 export interface Store {
   id: number;
@@ -38,7 +109,7 @@ export interface Payment {
   actual: string;
 }
 
-export interface Shift {
+export interface ShiftV1 {
   id: number;
   store: Store;
   register: Register;
@@ -155,53 +226,36 @@ export interface CloseShiftPayment {
   actual: number;
 }
 
-export interface CloseShiftData {
+export interface CloseShiftDataV1 {
   payments: CloseShiftPayment[];
   closing_cash: number;
   closing_comment: string;
 }
 
-// API response type
 export interface ShiftResponse {
-  results: Shift[];
+  results: ShiftV1[];
   count: number;
-  links: {
-    first: string | null;
-    last: string | null;
-    next: string | null;
-    previous: string | null;
-  };
+  links: { first: string | null; last: string | null; next: string | null; previous: string | null };
   total_pages: number;
   current_page: number;
   page_range: number[];
   page_size: number;
 }
+
 const BASE_URL = "pos/pos-shifts/";
 const OPEN_SHIFT_URL = "pos/pos-shifts/open/";
 
 export const shiftsApi = {
   getAll: (params?: {
-    store?: number;
-    register?: number;
-    cashier?: number;
-    approved_by?: number;
-    is_active?: boolean;
-    is_approved?: boolean;
-    is_awaiting_approval?: boolean;
+    store?: number; register?: number; cashier?: number;
+    approved_by?: number; is_active?: boolean; is_approved?: boolean; is_awaiting_approval?: boolean;
   }) => api.get<ShiftResponse>(BASE_URL, { params }),
-  getById: (id: number) => api.get<Shift>(`${BASE_URL}${id}/`),
-  create: (data: ShiftCreateData) => api.post<Shift>(BASE_URL, data),
-  update: (id: number, data: ShiftUpdateData) =>
-    api.patch<Shift>(`${BASE_URL}${id}/`, data),
+  getById: (id: number) => api.get<ShiftV1>(`${BASE_URL}${id}/`),
+  create: (data: ShiftCreateData) => api.post<ShiftV1>(BASE_URL, data),
+  update: (id: number, data: ShiftUpdateData) => api.patch<ShiftV1>(`${BASE_URL}${id}/`, data),
   delete: (id: number) => api.delete(`${BASE_URL}${id}/`),
-  openShift: (data: {
-    opening_cash: string;
-    opening_comment: string;
-    store: number;
-    register_id: number;
-  }) => api.post<Shift>(OPEN_SHIFT_URL, data),
-  getSummary: (id: number) =>
-    api.get<ShiftSummary>(`${BASE_URL}${id}/summary/`),
-  closeShift: (id: number, data: CloseShiftData) =>
-    api.post<Shift>(`${BASE_URL}${id}/close/`, data),
+  openShift: (data: { opening_cash: string; opening_comment: string; store: number; register_id: number }) =>
+    api.post<ShiftV1>(OPEN_SHIFT_URL, data),
+  getSummary: (id: number) => api.get<ShiftSummary>(`${BASE_URL}${id}/summary/`),
+  closeShift: (id: number, data: CloseShiftDataV1) => api.post<ShiftV1>(`${BASE_URL}${id}/close/`, data),
 };

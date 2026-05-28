@@ -5,9 +5,8 @@ import { Dialog, DialogContent, DialogDescription } from '@/components/ui/dialog
 import { ResourceForm } from '../helpers/ResourceForm';
 import { toast } from 'sonner';
 import { type Store, useGetStores, useUpdateStore, useDeleteStore } from '../api/store';
-import { useGetUsers } from '../api/user';
 import { Button } from '@/components/ui/button';
-import { Building2, Phone, MapPin, Plus, Pencil, Trash2, Store as StoreIcon, ArrowLeft, ArrowRight, DollarSign } from 'lucide-react';
+import { Phone, MapPin, Plus, Pencil, Trash2, Store as StoreIcon, ArrowLeft, ArrowRight, DollarSign, CheckCircle2, XCircle } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface StoreFormData {
@@ -15,10 +14,8 @@ interface StoreFormData {
   name: string;
   address: string;
   phone_number: string;
-  budget: string;
   is_main: boolean;
-  parent_store: string;
-  color: string; // hex color
+  is_active: boolean;
 }
 
 const storeFields = (t: (key: string) => string) => [
@@ -34,14 +31,14 @@ const storeFields = (t: (key: string) => string) => [
     label: t('forms.address'),
     type: 'text',
     placeholder: t('placeholders.enter_address'),
-    required: true,
+    required: false,
   },
   {
     name: 'phone_number',
     label: t('forms.phone'),
     type: 'text',
     placeholder: t('placeholders.enter_phone'),
-    required: true,
+    required: false,
   },
   {
     name: 'is_main',
@@ -55,19 +52,14 @@ const storeFields = (t: (key: string) => string) => [
     ],
   },
   {
-    name: 'parent_store',
-    label: t('forms.parent_store'),
+    name: 'is_active',
+    label: t('forms.is_active') || 'Активен',
     type: 'select',
-    placeholder: t('placeholders.select_store'),
-    required: false,
-    options: [], // Will be populated with stores
-  },
-  {
-    name: 'color',
-    label: t('forms.color'),
-    type: 'color',
-    placeholder: '#000000',
     required: true,
+    options: [
+      { value: true, label: t('common.yes') },
+      { value: false, label: t('common.no') },
+    ],
   },
 ];
 
@@ -85,12 +77,7 @@ export default function StoresPage() {
       ordering: '-created_at',
     },
   });
-  
-  const { data: usersData } = useGetUsers({});
-  // Get all stores for parent store dropdown
-  const { data: allStoresData } = useGetStores({});
 
-  // Handle both array and object response formats
   const results = Array.isArray(storesData) ? storesData : storesData?.results || [];
   const totalCount = Array.isArray(storesData) ? storesData.length : storesData?.count || 0;
 
@@ -99,39 +86,19 @@ export default function StoresPage() {
     displayId: (page - 1) * 10 + index + 1,
   }));
 
-  // Prepare options for select inputs
-  const users = Array.isArray(usersData) ? usersData : usersData?.results || [];
-  const allStores = Array.isArray(allStoresData) ? allStoresData : allStoresData?.results || [];
-
-  // Update field options with dynamic data
-  const fields = storeFields(t).map(field => {
-    if (field.name === 'owner') {
-      return {
-        ...field,
-        options: users.map(user => ({ value: String(user?.id ?? ''), label: user.name }))
-      };
-    }
-    if (field.name === 'parent_store') {
-      return {
-        ...field,
-        options: [
-          { value: '0', label: t('common.no') },
-          ...allStores.map(store => ({ value: String(store?.id ?? ''), label: store.name }))
-        ]
-      };
-    }
-    return field;
-  });
+  const fields = storeFields(t);
 
   const { mutate: updateStore, isPending: isUpdating } = useUpdateStore();
   const { mutate: deleteStore } = useDeleteStore();
 
   const handleEdit = (store: Store) => {
     const formattedStore: StoreFormData = {
-      ...store,
-      color: store.color || '#000000',
-      is_main: store.is_main,
-      parent_store: store.parent_store?.toString() ?? '0',
+      id: store.id,
+      name: store.name,
+      address: store.address || '',
+      phone_number: store.phone_number || '',
+      is_main: store.is_main || false,
+      is_active: store.is_active !== undefined ? store.is_active : true,
     };
     setEditingStore(formattedStore);
     setIsFormOpen(true);
@@ -142,10 +109,9 @@ export default function StoresPage() {
 
     const formattedData = {
       ...data,
-      color: data.color,
       id: editingStore.id,
-      parent_store: data.parent_store === '0' ? null : parseInt(data.parent_store, 10),
-      is_main: data.is_main === true || data.is_main.toString() === 'true'
+      is_main: data.is_main === true || data.is_main?.toString() === 'true',
+      is_active: data.is_active === true || data.is_active?.toString() === 'true',
     };
 
     updateStore(
@@ -204,33 +170,34 @@ export default function StoresPage() {
                   key={store.id} 
                   className="bg-white dark:bg-card shadow-md hover:shadow-lg transition-shadow"
                 >
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-[var(--muted-foreground)] dark:text-[var(--muted-foreground)]">
-                      <span className="inline-block w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: store.color || '#000' }}></span>
+                  <CardHeader className="flex flex-row items-start justify-between pb-2">
+                    <div className="flex items-center gap-2">
                       <StoreIcon className="h-5 w-5 text-primary" />
-                      {store.name}
-                    </CardTitle>
-                    {store.is_main && (
-                      <span className="absolute bottom-13 right-4 px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
-                        {t('common.main_store')}
-                      </span>
-                    )}
+                      <CardTitle className="text-sm font-medium">{store.name}</CardTitle>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {store.is_main && (
+                        <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
+                          {t('common.main_store')}
+                        </span>
+                      )}
+                      {store.is_active ? (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-red-400" />
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-3 text-gray-600">
                       <MapPin className="h-4 w-4 text-primary/60" />
-                      <span className="text-sm">{store.address}</span>
+                      <span className="text-sm">{store.address || '—'}</span>
                     </div>
                     <div className="flex items-center gap-3 text-gray-600">
                       <Phone className="h-4 w-4 text-primary/60" />
-                      <span className="text-sm">{store.phone_number}</span>
+                      <span className="text-sm">{store.phone_number || '—'}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-gray-600">
-                      <Building2 className="h-4 w-4 text-primary/60" />
-                      <span className="text-sm">{store.is_main ? t('common.yes') : t('common.no')}</span>
-                    </div>
-                    
-                    {/* Budget Breakdown */}
+
                     <div className="border-t pt-3 mt-3">
                       <div className="flex items-center gap-2 mb-2">
                         <DollarSign className="h-4 w-4 text-primary/60" />
@@ -246,12 +213,12 @@ export default function StoresPage() {
                           ))}
                           <div className="flex justify-between items-center text-sm font-semibold border-t pt-1 mt-1">
                             <span className="text-gray-700">{t('forms.total_budget')}:</span>
-                            <span className="text-green-600">{Number(store.budget).toLocaleString()} UZS</span>
+                            <span className="text-green-600">{Number(store.budget || 0).toLocaleString()} UZS</span>
                           </div>
                         </div>
                       ) : (
                         <div className="text-sm text-gray-600 ml-6">
-                          {Number(store.budget).toLocaleString()} UZS
+                          {Number(store.budget || 0).toLocaleString()} UZS
                         </div>
                       )}
                     </div>
@@ -308,9 +275,7 @@ export default function StoresPage() {
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogContent>
-            <DialogDescription className="mb-4">
-              {/* {t('messages.edit', { item: t('navigation.stores').toLowerCase() })} */}
-            </DialogDescription>
+            <DialogDescription className="mb-4" />
             <ResourceForm
               fields={fields}
               onSubmit={handleUpdateSubmit}

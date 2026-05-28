@@ -1,6 +1,5 @@
 import { createResourceApiHooks } from '../helpers/createResourceApi';
 
-// Types
 export interface StoreBudget {
   id: number;
   budget_type: string;
@@ -12,18 +11,20 @@ export interface Store {
   name: string;
   address: string;
   phone_number: string;
-  budget: string;
-  budgets?: StoreBudget[];
   is_main: boolean;
-  parent_store?: number;
-  owner: number;
-  color: string; // hex color, e.g. #FF0000
+  is_active: boolean;
+  budgets?: StoreBudget[];
+  created_at?: string;
+  updated_at?: string;
+  // backward compat
+  budget?: string;
+  color?: string;
+  parent_store?: number | null;
+  owner?: number;
 }
 
-// API endpoints
-const STORE_URL = 'store/';
+const STORE_URL = 'stores/';
 
-// Create store API hooks using the factory function
 export const {
   useGetResources: useGetStores,
   useGetResource: useGetStore,

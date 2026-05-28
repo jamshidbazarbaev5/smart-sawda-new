@@ -1,37 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useTranslation } from 'react-i18next';
+import { Dialog, DialogContent, DialogDescription } from '@/components/ui/dialog';
 import { ResourceForm } from '../helpers/ResourceForm';
 import { toast } from 'sonner';
-import type { Measurement } from '../api/measurement';
-import { useGetMeasurements, useDeleteMeasurement, useUpdateMeasurement } from '../api/measurement';
-import { useGetStores } from '../api/store';
-import { ResourceTable } from '../helpers/ResourseTable';
-import { useTranslation } from 'react-i18next';
+import { type Measurement, useGetMeasurements, useUpdateMeasurement, useDeleteMeasurement } from '../api/measurement';
+import { Button } from '@/components/ui/button';
+import { Ruler, Plus, Pencil, Trash2, CheckCircle2, XCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
-const columns = (t: any) => [
-  // {
-  //   header: '№',
-  //   accessorKey: 'id',
-  // },
+const fields = (t: (key: string) => string) => [
   {
-    header: t('forms.measurement_name'),
-    accessorKey: 'measurement_name',
-  },
-  {
-    header: t('forms.short_name'),
-    accessorKey: 'short_name',
-  },
-  
-];
-
-const measurementFields = (t: any) => [
-  {
-    name: 'measurement_name',
+    name: 'name',
     label: t('forms.measurement_name'),
     type: 'text',
-    placeholder: t('placeholders.enter_measurement_name'),
+    placeholder: t('placeholders.enter_name'),
     required: true,
   },
   {
@@ -41,138 +24,188 @@ const measurementFields = (t: any) => [
     placeholder: t('placeholders.enter_short_name'),
     required: true,
   },
-  
+  {
+    name: 'is_active',
+    label: t('forms.is_active'),
+    type: 'select',
+    required: true,
+    options: [
+      { value: true, label: t('common.yes') },
+      { value: false, label: t('common.no') },
+    ],
+  },
 ];
-
-interface PaginatedResponse {
-  links: {
-    first: string | null;
-    last: string | null;
-    next: string | null;
-    previous: string | null;
-  };
-  total_pages: number;
-  current_page: number;
-  page_range: number[];
-  page_size: number;
-  results: Measurement[];
-  count: number;
-}
 
 export default function MeasurementsPage() {
   const navigate = useNavigate();
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingMeasurement, setEditingMeasurement] = useState<Measurement | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
   const { t } = useTranslation();
+  const [page, setPage] = useState(1);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editing, setEditing] = useState<Measurement | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
   const { data: measurementsData, isLoading } = useGetMeasurements({
-    params: {
-      measurement_name: searchTerm
-    }
+    params: { page, page_size: 20, name: searchTerm || undefined },
   });
-  const { data: storesData } = useGetStores();
-  const deleteMeasurement = useDeleteMeasurement();
-  const { mutate: updateMeasurement, isPending: isUpdating } = useUpdateMeasurement();
 
-  // Transform data for the table, handling the paginated response
-  const measurements = (measurementsData as PaginatedResponse)?.results || [];
+  const results: Measurement[] = Array.isArray(measurementsData)
+    ? measurementsData
+    : measurementsData?.results || [];
+  const totalCount = Array.isArray(measurementsData)
+    ? measurementsData.length
+    : measurementsData?.count || 0;
 
-  // Transform stores data into options for the select field
-  const stores = Array.isArray(storesData) ? storesData : storesData?.results || [];
-  const storeOptions = stores.map(store => ({
-    value: store.id,
-    label: store.name,
-  }));
+  const { mutate: updateItem, isPending: isUpdating } = useUpdateMeasurement();
+  const { mutate: deleteItem } = useDeleteMeasurement();
 
-  // Update the store_write field options
-  const fields = measurementFields(t)?.map(field => 
-    field.name === 'store_write' 
-      ? { ...field, options: storeOptions }
-      : field
-  );
-
-  const handleCreate = () => {
-    navigate('/measurements/create');
-  };
-
-  const handleEdit = (measurement: Measurement) => {
-    // Map the store_read data to store_write for the form
-    const measurementWithStore = {
-      ...measurement,
-      store_write: measurement.store_read?.id || measurement.store_write
-    } as Measurement;
-    setEditingMeasurement(measurementWithStore);
+  const handleEdit = (item: Measurement) => {
+    setEditing(item);
     setIsFormOpen(true);
   };
 
-  const handleUpdateSubmit = (data: Partial<Measurement>) => {
-    if (!editingMeasurement?.id) return;
-
-    const formattedData = {
-      ...data,
-      id: editingMeasurement.id,
-      store_write: typeof data.store_write === 'string' ? parseInt(data.store_write, 10) : data.store_write,
-      measurement_name: data.measurement_name || editingMeasurement.measurement_name
+  const handleUpdateSubmit = (data: Record<string, unknown>) => {
+    if (!editing?.id) return;
+    const payload: Measurement = {
+      ...data as unknown as Measurement,
+      id: editing.id,
+      is_active: data.is_active === true || data.is_active?.toString() === 'true',
     };
-
-    updateMeasurement(
-      formattedData as Measurement,
-      {
-        onSuccess: () => {
-          toast.success('Measurement successfully updated');
-          setIsFormOpen(false);
-          setEditingMeasurement(null);
-        },
-      }
-    );
+    updateItem(payload, {
+      onSuccess: () => {
+        toast.success(t('messages.success.updated', { item: t('navigation.measurements') }));
+        setIsFormOpen(false);
+        setEditing(null);
+      },
+    });
   };
 
-  const handleDelete = async (id: number) => {
-    try {
-      await deleteMeasurement.mutateAsync(id);
-      toast.success('Measurement deleted successfully');
-    } catch (error) {
-      toast.error('Failed to delete measurement');
-      console.error('Failed to delete measurement:', error);
-    }
+  const handleDelete = (id: number) => {
+    if (!window.confirm(t('messages.confirm_delete'))) return;
+    deleteItem(id, {
+      onSuccess: () => toast.success(t('messages.success.deleted', { item: t('navigation.measurements') })),
+      onError: () => toast.error(t('messages.error.delete', { item: t('navigation.measurements') })),
+    });
   };
+
+  const displayName = (m: Measurement) => m.name || m.measurement_name || '';
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      
-      <div className="flex flex-col gap-4 mb-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">{t('forms.measurements')}</h1>
-          <Button onClick={handleCreate}>{t('common.create')}</Button>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <div className="container mx-auto py-8 px-4 bg-white dark:bg-card">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('navigation.measurements')}</h1>
+            <p className="text-gray-500">{t('common.total')}: {totalCount}</p>
+          </div>
+          <Button
+            onClick={() => navigate('/measurements/create')}
+            className="bg-primary hover:bg-primary/90 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            {t('common.create')}
+          </Button>
         </div>
-        <input
-          type="text"
-          placeholder={t('placeholders.search_measurement')}
-          className="w-full p-2 border rounded"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
 
-      <ResourceTable<Measurement>
-        data={measurements}
-        columns={columns(t)}
-        isLoading={isLoading}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent>
-          <ResourceForm
-            fields={fields}
-            onSubmit={handleUpdateSubmit}
-            defaultValues={editingMeasurement || undefined}
-            isSubmitting={isUpdating}
-            title={t('common.edit') + ' ' + t('forms.measurement_name')}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder={t('placeholders.search')}
+            className="w-full p-2 border rounded"
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
           />
-        </DialogContent>
-      </Dialog>
+        </div>
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="rounded-lg border border-gray-200 p-6 space-y-3">
+                <div className="h-6 bg-gray-200 rounded w-2/3 animate-pulse" />
+                <div className="h-4 bg-gray-100 rounded w-1/2 animate-pulse" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {results.map((item) => (
+                <Card key={item.id} className="bg-white dark:bg-card shadow-md hover:shadow-lg transition-shadow">
+                  <CardHeader className="flex flex-row items-start justify-between pb-2">
+                    <div className="flex items-center gap-2">
+                      <Ruler className="h-5 w-5 text-primary" />
+                      <CardTitle className="text-lg font-semibold">{displayName(item)}</CardTitle>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {item.is_system && (
+                        <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">
+                          {t('common.system')}
+                        </span>
+                      )}
+                      {item.is_active ? (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-red-400" />
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm text-gray-500">
+                      {item.short_name && (
+                        <span className="px-2 py-1 bg-gray-100 rounded text-xs font-mono">
+                          {item.short_name}
+                        </span>
+                      )}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-end gap-3 pt-4 border-t">
+                    <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}
+                      className="hover:bg-primary/5 hover:text-primary flex items-center gap-1">
+                      <Pencil className="h-4 w-4" /> {t('common.edit')}
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id!)}
+                      disabled={item.is_system}
+                      className="hover:bg-red-50 hover:text-red-600 flex items-center gap-1">
+                      <Trash2 className="h-4 w-4" /> {t('common.delete')}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+
+            <div className="mt-8 flex justify-center items-center gap-4">
+              <Button variant="outline" onClick={() => setPage(p => p - 1)} disabled={page === 1}
+                className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" /> {t('common.previous')}
+              </Button>
+              <span className="text-sm px-4 py-2 bg-gray-50 rounded-md">
+                {t('common.page')} {page} {t('common.of')} {Math.ceil(totalCount / 20) || 1}
+              </span>
+              <Button variant="outline" onClick={() => setPage(p => p + 1)}
+                disabled={page >= Math.ceil(totalCount / 20)}
+                className="flex items-center gap-2">
+                {t('common.next')} <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </>
+        )}
+
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogContent>
+            <DialogDescription className="mb-4" />
+            <ResourceForm
+              fields={fields(t)}
+              onSubmit={handleUpdateSubmit}
+              defaultValues={{
+                name: editing?.name || editing?.measurement_name,
+                short_name: editing?.short_name,
+                is_active: editing?.is_active?.toString() || 'true',
+              }}
+              isSubmitting={isUpdating}
+              title={t('common.edit') + ' ' + t('navigation.measurements').toLowerCase()}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }

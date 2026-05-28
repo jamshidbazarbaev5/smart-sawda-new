@@ -1111,7 +1111,7 @@ export default function EditStock() {
                       key={String(category.id)}
                       value={String(category.id || "")}
                     >
-                      {category.category_name}
+                      {category.name || category.category_name}
                     </SelectItem>
                   ))}
                 </SelectContent>

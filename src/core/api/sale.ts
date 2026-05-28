@@ -2,7 +2,49 @@ import { createResourceApiHooks } from "../helpers/createResourceApi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "./api";
 
-// Types
+export interface SaleItemInput {
+  product: number;
+  variant?: number | null;
+  quantity: string;
+  selling_unit: number;
+  price_per_unit: string;
+  discount_amount?: string;
+  discount_type?: string;
+  discount_rule?: number | null;
+}
+
+export interface SalePaymentInput {
+  payment_method: number;
+  amount: string;
+  exchange_rate?: string;
+  change_amount?: string;
+  reference?: string;
+}
+
+export interface SaleCreateInput {
+  sale_number?: string;
+  order?: number | null;
+  store: number;
+  shift?: number | null;
+  sold_by?: number | null;
+  client?: number | null;
+  total_amount: string;
+  discount_amount?: string;
+  final_amount?: string;
+  change_amount?: string;
+  use_client_balance?: boolean;
+  paid_from_balance?: string;
+  balance_currency?: number | null;
+  on_credit?: boolean;
+  is_paid?: boolean;
+  exchange_rate?: string;
+  coupon?: number | null;
+  fiscal_provider?: string;
+  comment?: string;
+  sale_items: SaleItemInput[];
+  sale_payments: SalePaymentInput[];
+}
+
 export interface SaleDebt {
   client: number;
   due_date: string;
@@ -53,7 +95,6 @@ export interface SaleItem {
       id: number;
       selling_price: number;
       min_price: number;
-
       short_name: string;
       factor: number;
       is_base: boolean;
@@ -116,7 +157,7 @@ export interface SaleRefund {
     subtotal: string;
   }>;
   refund_payments?: Array<{
-    payment_method: string;
+    payment_method: number;
     amount: string;
   }>;
   total_refund_amount: string;
@@ -126,9 +167,9 @@ export interface SaleRefund {
 }
 
 export interface Sale {
-  comment?:string
+  comment?: string;
   id?: number;
-  use_client_balance:boolean;
+  use_client_balance: boolean;
   sale_id?: string;
   discount_amount?: string;
   store?: number;
@@ -142,7 +183,7 @@ export interface Sale {
     parent_store: number | null;
     owner: number;
   };
-  payment_method: string;
+  payment_method: number;
   sale_items: SaleItem[];
   on_credit: boolean;
   is_paid?: boolean;
@@ -153,10 +194,15 @@ export interface Sale {
   total_pure_revenue?: string;
   charges_total?: string;
   change_amount?: string;
-  sale_charges?: { id?: number; charge_type: number; charge_type_name?: string; amount: string }[];
+  sale_charges?: {
+    id?: number;
+    charge_type: number;
+    charge_type_name?: string;
+    amount: string;
+  }[];
   sale_payments?:
     | {
-        payment_method: string;
+        payment_method: number;
         amount: string;
         change_amount?: string;
       }[]
@@ -166,28 +212,24 @@ export interface Sale {
   created_at?: string;
   sold_date?: string;
   worker_read?: any;
+  sale_number?: string;
+  fiscal_provider?: string;
+  balance_currency?: number | null;
+  paid_from_balance?: string;
+  final_amount?: string;
 }
 
-// API endpoints
-const SALE_CREATE_URL = "sales/create/";
-const SALE_LIST_URL = "sales/";
+const SALE_URL = "sales/";
 
-// Create hooks for update and delete operations using the list URL
 const { useUpdateResource: useUpdateSale, useDeleteResource: useDeleteSale } =
-  createResourceApiHooks<Sale>(SALE_LIST_URL, "sales");
+  createResourceApiHooks<Sale>(SALE_URL, "sales");
 
-// Custom create hook using the correct create endpoint
 const useCreateSale = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (newSale: Sale | FormData) => {
-      const isFormData = newSale instanceof FormData;
-      const config = isFormData
-        ? { headers: { "Content-Type": "multipart/form-data" } }
-        : {};
-
-      const response = await api.post<Sale>(SALE_CREATE_URL, newSale, config);
+    mutationFn: async (newSale: SaleCreateInput) => {
+      const response = await api.post<Sale>(SALE_URL, newSale);
       return response.data;
     },
     onSuccess: () => {
@@ -196,7 +238,6 @@ const useCreateSale = () => {
   });
 };
 
-// Custom GET hooks using the correct /sales/ endpoint
 export interface SalesResponse {
   results: Sale[];
   count: number;
@@ -221,7 +262,7 @@ export const useGetSales = (options?: { params?: Record<string, any> }) => {
   return useQuery({
     queryKey: ["sales", options?.params],
     queryFn: async () => {
-      const response = await api.get<Sale[] | SalesResponse>(SALE_LIST_URL, {
+      const response = await api.get<Sale[] | SalesResponse>(SALE_URL, {
         params: options?.params,
       });
       return response.data;
@@ -233,7 +274,7 @@ export const useGetSale = (id: number) => {
   return useQuery({
     queryKey: ["sales", id],
     queryFn: async () => {
-      const response = await api.get<Sale>(`${SALE_LIST_URL}${id}/`);
+      const response = await api.get<Sale>(`${SALE_URL}${id}/`);
       return response.data;
     },
     enabled: !!id,
@@ -245,7 +286,7 @@ export const useGetSaleDebt = (saleId: number) => {
     queryKey: ["sales", saleId, "debt"],
     queryFn: async () => {
       const response = await api.get<{ remaining_debt_amount: number }>(
-        `${SALE_LIST_URL}${saleId}/debt`
+        `${SALE_URL}${saleId}/debt`
       );
       return response.data;
     },

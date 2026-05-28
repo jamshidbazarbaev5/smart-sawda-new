@@ -131,7 +131,7 @@ export function ResourceForm<T extends Record<string, any>>({
                             className={field.readOnly ? 'bg-gray-100 dark:bg-gray-800' : ''}
                           />
                         ) : field.type === 'select' ? (
-                          <>
+                          <div>
                             <Select
                               onValueChange={(value) => {
                                 formField.onChange(value);
@@ -158,7 +158,7 @@ export function ResourceForm<T extends Record<string, any>>({
                                 {field.nestedField}
                               </div>
                             )}
-                          </>
+                          </div>
                         ) : field.type === 'searchable-select' ? (
                           <Select
                             onValueChange={(value) => {

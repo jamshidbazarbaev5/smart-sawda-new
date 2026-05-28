@@ -274,7 +274,7 @@ export default function ProductStockBalancePage() {
               <SelectItem value="all">{t("common.all")}</SelectItem>
               {categories.map((category: any) => (
                 <SelectItem key={category.id} value={category.id?.toString()}>
-                  {category.category_name}
+                  {category.name || category.category_name}
                 </SelectItem>
               ))}
             </SelectContent>

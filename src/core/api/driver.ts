@@ -1,17 +1,17 @@
 import { createResourceApiHooks } from '../helpers/createResourceApi';
 import api from './api';
 
-// Types
 export interface Driver {
   id?: number;
   full_name: string;
+  phone_number: string;
+  is_active: boolean;
   created_at?: string;
+  updated_at?: string;
 }
 
-// API endpoints
 const DRIVER_URL = 'incomes/drivers/';
 
-// Create driver API hooks using the factory function
 export const {
   useGetResources: useGetDrivers,
   useGetResource: useGetDriver,
@@ -20,8 +20,12 @@ export const {
   useDeleteResource: useDeleteDriver,
 } = createResourceApiHooks<Driver>(DRIVER_URL, 'drivers');
 
-// Function to fetch driver details
 export const fetchDriverDetails = async (id: number): Promise<Driver> => {
   const response = await api.get<Driver>(`${DRIVER_URL}${id}/`);
+  return response.data;
+};
+
+export const patchDriver = async (id: number, data: Partial<Driver>): Promise<Driver> => {
+  const response = await api.patch<Driver>(`${DRIVER_URL}${id}/`, data);
   return response.data;
 };

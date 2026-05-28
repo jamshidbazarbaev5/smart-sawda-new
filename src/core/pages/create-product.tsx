@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { ResourceForm } from "../helpers/ResourceForm";
 import {
   type Product,
   type Variant,
@@ -18,14 +17,15 @@ import type { Attribute } from "@/types/attribute";
 import { toast } from "sonner";
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { MultiSelect } from "@/components/MultiSelect";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus, Trash2, Package, DollarSign, Settings, Layers, Boxes, Tags } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, Plus, Trash2, Package, Settings, Layers, Boxes, Tags, Info, DollarSign, ChevronRight } from "lucide-react";
 
 interface AttributeValue {
   attribute_id: number;
@@ -117,7 +117,7 @@ export default function CreateProduct() {
           );
           if (selectedCategoryData) {
             const response = await fetchCategoriesWithAttributes(
-              selectedCategoryData.category_name,
+              selectedCategoryData.name,
             );
             const categoryWithAttributes = response.results.find(
               (cat) => cat.id === selectedCategory,
@@ -329,583 +329,489 @@ export default function CreateProduct() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-5xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Page Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/products")}
-            className="shrink-0"
-          >
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/products")} className="shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {t("common.create") + " " + t("table.product")}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Заполните информацию о товаре
-            </p>
+            <p className="text-sm text-muted-foreground mt-0.5">{t("create_product.subtitle")}</p>
           </div>
         </div>
 
-        <ResourceForm<Product>
-          form={form}
-          fields={[
-            {
-              name: "name",
-              label: t("forms.product_name"),
-              type: "text",
-              placeholder: t("placeholders.enter_name"),
-              required: true,
-            },
-            {
-              name: "category",
-              label: t("table.category"),
-              type: "select",
-              placeholder: t("placeholders.select_category"),
-              required: true,
-              options: categories.map((category) => ({
-                value: category.id,
-                label: category.category_name,
-              })),
-              onChange: (value: string) => setSelectedCategory(Number(value)),
-            },
-            {
-              name: "base_unit",
-              label: t("forms.base_unit"),
-              type: "select",
-              placeholder: t("forms.base_unit"),
-              options: availableMeasurements.map((measurement) => ({
-                value: measurement.id,
-                label: measurement.measurement_name,
-              })),
-              value: baseUnit,
-              onChange: (value: string) => setBaseUnit(value),
-            },
-            {
-              name: "barcode",
-              label: t("forms.barcode"),
-              type: "text",
-              placeholder: t("forms.barcode"),
-            },
-            {
-              name: "sku",
-              label: t("forms.sku") || "SKU (Артикул)",
-              type: "text",
-              placeholder: "SKU",
-              hidden: flags?.has_articles === false,
-            },
-            {
-              name: "ikpu",
-              label: "IKPU",
-              type: "text",
-              placeholder: "IKPU",
-            },
-            {
-              name: "plu_code",
-              label: "PLU код",
-              type: "text",
-              placeholder: t("forms.plu_code") || "PLU код",
-              hidden: flags?.has_weight === false,
-            },
-            {
-              name: "selling_price",
-              label: t("forms.selling_price"),
-              type: "number",
-              placeholder: t("forms.selling_price"),
-              required: true,
-              value: sellingPrice,
-              onChange: (value: string) => setSellingPrice(value),
-            },
-            {
-              name: "min_price",
-              label: t("forms.min_price"),
-              type: "number",
-              placeholder: t("forms.min_price"),
-              required: true,
-              value: minPrice,
-              onChange: (value: string) => setMinPrice(value),
-            },
-            {
-              name: "low_stock_threshold",
-              label: t("forms.low_stock_threshold") || "Мин. остаток",
-              type: "number",
-              placeholder: t("forms.low_stock_threshold") || "Мин. остаток",
-            },
-          ]}
-          onSubmit={handleSubmit}
-          isSubmitting={createProduct.isPending}
-          hideSubmitButton
-        >
-          {/* Toggle Switches Row */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Settings className="h-4 w-4 text-muted-foreground" />
-                {t("forms.additional_settings") || "Дополнительные настройки"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {flags?.has_variants !== false && (
-                  <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
-                    <Label htmlFor="has_variations" className="cursor-pointer">
-                      {t("forms.has_variations") || "Имеет вариации"}
-                    </Label>
-                    <Switch
-                      id="has_variations"
-                      checked={hasVariations}
-                      onCheckedChange={setHasVariations}
-                    />
-                  </div>
-                )}
-                {flags?.has_expiry !== false && (
-                  <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
-                    <Label htmlFor="track_expiry" className="cursor-pointer">
-                      {t("forms.track_expiry") || "Срок годности"}
-                    </Label>
-                    <Switch
-                      id="track_expiry"
-                      checked={trackExpiry}
-                      onCheckedChange={setTrackExpiry}
-                    />
-                  </div>
-                )}
-                {(flags?.has_serial !== false || flags?.has_imei !== false) && (
-                  <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
-                    <Label htmlFor="track_serial_numbers" className="cursor-pointer">
-                      {flags?.has_imei ? "IMEI" : (t("forms.track_serial_numbers") || "Серийные номера")}
-                    </Label>
-                    <Switch
-                      id="track_serial_numbers"
-                      checked={trackSerialNumbers}
-                      onCheckedChange={setTrackSerialNumbers}
-                    />
-                  </div>
-                )}
-                <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
-                  <Label htmlFor="enable_initial_stock" className="cursor-pointer">
-                    {t("forms.initial_stock") || "Начальный остаток"}
-                  </Label>
-                  <Switch
-                    id="enable_initial_stock"
-                    checked={showInitialStock}
-                    onCheckedChange={setShowInitialStock}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <FormProvider {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)}>
+            <Tabs defaultValue="basic" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="basic" className="flex items-center gap-2">
+                  <Info className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t("tabs.basic")}</span>
+                </TabsTrigger>
+                <TabsTrigger value="pricing" className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t("tabs.pricing")}</span>
+                </TabsTrigger>
+                <TabsTrigger value="variations" className="flex items-center gap-2">
+                  <Layers className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t("tabs.variations")}</span>
+                </TabsTrigger>
+                <TabsTrigger value="advanced" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t("tabs.advanced")}</span>
+                </TabsTrigger>
+              </TabsList>
 
-          {/* Variants Section */}
-          {flags?.has_variants !== false && hasVariations && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Layers className="h-4 w-4 text-muted-foreground" />
-                  {t("forms.variants") || "Вариации"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {variants.map((variant, index) => (
-                  <div key={index} className="relative p-4 rounded-lg border bg-card">
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">SKU</Label>
-                        <input
-                          type="text"
-                          className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-                          placeholder="SKU"
-                          value={variant.sku || ""}
-                          onChange={(e) => {
-                            const newVariants = [...variants];
-                            newVariants[index] = { ...newVariants[index], sku: e.target.value };
-                            setVariants(newVariants);
-                          }}
+              {/* Tab: Basic Info */}
+              <TabsContent value="basic" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Info className="h-4 w-4 text-muted-foreground" />
+                      {t("forms.basic_info") || "Основная информация"}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="space-y-2 sm:col-span-2 lg:col-span-3">
+                        <Label>{t("forms.product_name")} *</Label>
+                        <Input
+                          {...form.register("name")}
+                          placeholder={t("placeholders.enter_name")}
                         />
                       </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">{t("forms.barcode")}</Label>
-                        <input
-                          type="text"
+                      <div className="space-y-2">
+                        <Label>{t("table.category")} *</Label>
+                        <select
                           className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
+                          value={selectedCategory || ""}
+                          onChange={(e) => {
+                            const val = e.target.value ? Number(e.target.value) : null;
+                            setSelectedCategory(val);
+                            form.setValue("category", val!);
+                          }}
+                        >
+                          <option value="">{t("placeholders.select_category")}</option>
+                          {categories.map((cat) => (
+                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t("forms.base_unit")} *</Label>
+                        <select
+                          className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
+                          value={baseUnit}
+                          onChange={(e) => setBaseUnit(e.target.value)}
+                        >
+                          <option value="">{t("forms.base_unit")}</option>
+                          {availableMeasurements.map((m) => (
+                            <option key={m.id} value={m.id}>{m.name || m.measurement_name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t("forms.barcode")}</Label>
+                        <Input
+                          value={barcode}
+                          onChange={(e) => { setBarcode(e.target.value); form.setValue("barcode", e.target.value); }}
                           placeholder={t("forms.barcode")}
-                          value={variant.barcode || ""}
-                          onChange={(e) => {
-                            const newVariants = [...variants];
-                            newVariants[index] = { ...newVariants[index], barcode: e.target.value };
-                            setVariants(newVariants);
-                          }}
                         />
                       </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">{t("forms.selling_price")}</Label>
-                        <input
-                          type="number"
-                          className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-                          placeholder={t("forms.selling_price")}
-                          value={variant.selling_price || ""}
-                          onChange={(e) => {
-                            const newVariants = [...variants];
-                            newVariants[index] = { ...newVariants[index], selling_price: e.target.value };
-                            setVariants(newVariants);
-                          }}
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <div className="flex-1">
-                          <Label className="text-xs text-muted-foreground mb-1.5 block">{t("forms.min_price")}</Label>
-                          <input
-                            type="number"
-                            className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-                            placeholder={t("forms.min_price")}
-                            value={variant.min_price || ""}
-                            onChange={(e) => {
-                              const newVariants = [...variants];
-                              newVariants[index] = { ...newVariants[index], min_price: e.target.value };
-                              setVariants(newVariants);
-                            }}
+                      {flags?.has_articles !== false && (
+                        <div className="space-y-2">
+                          <Label>{t("forms.sku") || "SKU (Артикул)"}</Label>
+                          <Input
+                            value={sku}
+                            onChange={(e) => setSku(e.target.value)}
+                            placeholder={t("forms.sku")}
                           />
                         </div>
-                        {index > 0 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="mt-5 shrink-0 h-9 w-9 text-destructive hover:text-destructive"
-                            onClick={() => setVariants(variants.filter((_, i) => i !== index))}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() =>
-                    setVariants([
-                      ...variants,
-                      { option_values: [], sku: "", barcode: "", selling_price: "", min_price: "" },
-                    ])
-                  }
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t("common.add") || "Добавить вариацию"}
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Unit Conversions Section */}
-          {flags?.flexible_units !== false && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Package className="h-4 w-4 text-muted-foreground" />
-                  {t("forms.unit_conversions") || "Конверсия единиц"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {unitConversions.map((conversion, index) => (
-                  <div key={index} className="relative p-4 rounded-lg border bg-card">
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">{t("forms.from_unit") || "Из"}</Label>
-                        <select
-                          className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-                          value={conversion.from_unit || ""}
-                          onChange={(e) => {
-                            const newConversions = [...unitConversions];
-                            newConversions[index] = {
-                              ...newConversions[index],
-                              from_unit: parseInt(e.target.value, 10),
-                            };
-                            setUnitConversions(newConversions);
-                          }}
-                        >
-                          <option value="">{t("forms.from_unit") || "Из"}</option>
-                          {availableMeasurements.map((m) => (
-                            <option key={m.id} value={m.id}>
-                              {m.measurement_name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">{t("forms.to_unit") || "К"}</Label>
-                        <select
-                          className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-                          value={conversion.to_unit || ""}
-                          onChange={(e) => {
-                            const newConversions = [...unitConversions];
-                            newConversions[index] = {
-                              ...newConversions[index],
-                              to_unit: parseInt(e.target.value, 10),
-                            };
-                            setUnitConversions(newConversions);
-                          }}
-                        >
-                          <option value="">{t("forms.to_unit") || "К"}</option>
-                          {availableMeasurements.map((m) => (
-                            <option key={m.id} value={m.id}>
-                              {m.measurement_name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">{t("forms.factor") || "Коэффициент"}</Label>
-                        <input
-                          type="number"
-                          step="any"
-                          className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-                          placeholder={t("forms.factor") || "Коэффициент"}
-                          value={conversion.factor || ""}
-                          onChange={(e) => {
-                            const newConversions = [...unitConversions];
-                            newConversions[index] = { ...newConversions[index], factor: e.target.value };
-                            setUnitConversions(newConversions);
-                          }}
+                      )}
+                      <div className="space-y-2">
+                        <Label>{t("forms.ikpu")}</Label>
+                        <Input
+                          value={ikpu}
+                          onChange={(e) => setIkpu(e.target.value)}
+                          placeholder={t("forms.ikpu")}
                         />
                       </div>
-                      {index > 0 && (
-                        <div className="flex items-end">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="h-9 w-9 text-destructive hover:text-destructive"
-                            onClick={() => setUnitConversions(unitConversions.filter((_, i) => i !== index))}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                      {flags?.has_weight !== false && (
+                        <div className="space-y-2">
+                          <Label>{t("forms.plu_code") || "PLU код"}</Label>
+                          <Input
+                            value={pluCode}
+                            onChange={(e) => setPluCode(e.target.value)}
+                            placeholder={t("forms.plu_code") || "PLU код"}
+                          />
                         </div>
                       )}
                     </div>
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() =>
-                    setUnitConversions([...unitConversions, { from_unit: 0, to_unit: 0, factor: "" }])
-                  }
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t("common.add") || "Добавить конверсию"}
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-          {/* Initial Stock Section */}
-          {showInitialStock && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Boxes className="h-4 w-4 text-muted-foreground" />
-                  {t("forms.initial_stock") || "Начальный остаток"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>{t("forms.store") || "Склад"}</Label>
-                    <select
-                      className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-                      value={initialStore}
-                      onChange={(e) => setInitialStore(Number(e.target.value))}
-                    >
-                      <option value="">{t("placeholders.select_store") || "Выберите склад"}</option>
-                      {stores.map((store: any) => (
-                        <option key={store.id} value={store.id}>
-                          {store.name}
-                        </option>
+              {/* Tab: Pricing */}
+              <TabsContent value="pricing" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                      {t("forms.pricing") || "Цены и остатки"}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>{t("forms.selling_price")} *</Label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            value={sellingPrice}
+                            onChange={(e) => setSellingPrice(e.target.value)}
+                            placeholder={t("forms.selling_price")}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t("forms.min_price")} *</Label>
+                        <Input
+                          type="number"
+                          value={minPrice}
+                          onChange={(e) => setMinPrice(e.target.value)}
+                          placeholder={t("forms.min_price")}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t("forms.low_stock_threshold") || "Мин. остаток"}</Label>
+                        <Input
+                          type="number"
+                          value={lowStockThreshold}
+                          onChange={(e) => setLowStockThreshold(e.target.value)}
+                          placeholder={t("forms.low_stock_threshold") || "Мин. остаток"}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Initial Stock Toggle */}
+                <Card>
+                  <CardContent>
+                    <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                      <Label htmlFor="enable_initial_stock" className="cursor-pointer text-sm font-medium">{t("forms.initial_stock") || "Нач. остаток"}</Label>
+                      <Switch id="enable_initial_stock" checked={showInitialStock} onCheckedChange={setShowInitialStock} />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Initial Stock */}
+                {showInitialStock && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Boxes className="h-4 w-4 text-muted-foreground" />
+                        {t("forms.initial_stock") || "Начальный остаток"}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>{t("forms.store") || "Склад"}</Label>
+                          <select
+                            className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
+                            value={initialStore}
+                            onChange={(e) => setInitialStore(Number(e.target.value))}
+                          >
+                            <option value="">{t("placeholders.select_store") || "Выберите склад"}</option>
+                            {stores.map((store: any) => (
+                              <option key={store.id} value={store.id}>{store.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>{t("forms.total_amount") || "Общая сумма"}</Label>
+                          <Input
+                            type="number" step="0.01"
+                            value={initialTotalAmount}
+                            onChange={(e) => setInitialTotalAmount(e.target.value)}
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>{t("forms.note") || "Примечание"}</Label>
+                          <Input
+                            value={initialNote}
+                            onChange={(e) => setInitialNote(e.target.value)}
+                            placeholder={t("forms.note") || "Примечание"}
+                          />
+                        </div>
+                        <div className="flex items-center gap-3 p-3 rounded-lg border bg-card mt-6">
+                          <input type="checkbox" id="initial_is_debt" className="h-4 w-4" checked={initialIsDebt} onChange={(e) => setInitialIsDebt(e.target.checked)} />
+                          <Label htmlFor="initial_is_debt" className="cursor-pointer">{t("forms.is_debt") || "Долг"}</Label>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              {/* Tab: Variations */}
+              <TabsContent value="variations" className="space-y-6">
+                {flags?.has_variants !== false && (
+                  <Card>
+                    <CardContent>
+                      <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                        <Label htmlFor="has_variations" className="cursor-pointer text-sm font-medium">{t("forms.has_variations") || "Вариации"}</Label>
+                        <Switch id="has_variations" checked={hasVariations} onCheckedChange={setHasVariations} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                {flags?.has_variants === false && (
+                  <Card>
+                    <CardContent className="py-8 text-center text-muted-foreground">
+                      {t("messages.variants_disabled") || "Вариации не поддерживаются для вашего тарифа"}
+                    </CardContent>
+                  </Card>
+                )}
+                {flags?.has_variants !== false && !hasVariations && (
+                  <Card>
+                    <CardContent className="py-8 text-center">
+                      <Layers className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                      <p className="text-muted-foreground mb-4">{t("messages.enable_variants") || "Включите вариации в настройках товара"}</p>
+                    </CardContent>
+                  </Card>
+                )}
+                {flags?.has_variants !== false && hasVariations && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Layers className="h-4 w-4 text-muted-foreground" />
+                        {t("forms.variants") || "Вариации"}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {variants.map((variant, index) => (
+                        <div key={index} className="relative p-4 rounded-lg border bg-card">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                              {t("forms.variant") || "Вариант"} #{index + 1}
+                            </span>
+                            {index > 0 && (
+                              <Button type="button" variant="ghost" size="sm" className="text-destructive h-8 px-2" onClick={() => setVariants(variants.filter((_, i) => i !== index))}>
+                                <Trash2 className="h-4 w-4 mr-1" />{t("common.delete") || "Удалить"}
+                              </Button>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">{t("forms.sku")}</Label>
+                              <Input value={variant.sku || ""} onChange={(e) => { const v = [...variants]; v[index] = { ...v[index], sku: e.target.value }; setVariants(v); }} placeholder={t("forms.sku")} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">{t("forms.barcode")}</Label>
+                              <Input value={variant.barcode || ""} onChange={(e) => { const v = [...variants]; v[index] = { ...v[index], barcode: e.target.value }; setVariants(v); }} placeholder={t("forms.barcode")} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">{t("forms.selling_price")}</Label>
+                              <Input type="number" value={variant.selling_price || ""} onChange={(e) => { const v = [...variants]; v[index] = { ...v[index], selling_price: e.target.value }; setVariants(v); }} placeholder={t("forms.selling_price")} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">{t("forms.min_price")}</Label>
+                              <Input type="number" value={variant.min_price || ""} onChange={(e) => { const v = [...variants]; v[index] = { ...v[index], min_price: e.target.value }; setVariants(v); }} placeholder={t("forms.min_price")} />
+                            </div>
+                          </div>
+                        </div>
                       ))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t("forms.total_amount") || "Общая сумма"}</Label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-                      placeholder="0.00"
-                      value={initialTotalAmount}
-                      onChange={(e) => setInitialTotalAmount(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t("forms.note") || "Примечание"}</Label>
-                    <input
-                      type="text"
-                      className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-                      placeholder={t("forms.note") || "Примечание"}
-                      value={initialNote}
-                      onChange={(e) => setInitialNote(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg border bg-card mt-6">
-                    <input
-                      type="checkbox"
-                      id="initial_is_debt"
-                      className="h-4 w-4 rounded border-gray-300"
-                      checked={initialIsDebt}
-                      onChange={(e) => setInitialIsDebt(e.target.checked)}
-                    />
-                    <Label htmlFor="initial_is_debt" className="cursor-pointer">
-                      {t("forms.is_debt") || "Долг"}
-                    </Label>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                      <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => setVariants([...variants, { option_values: [], sku: "", barcode: "", selling_price: "", min_price: "" }])}>
+                        <Plus className="h-4 w-4 mr-2" />{t("common.add") || "Добавить вариацию"}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
 
-          {/* Dynamic Attribute Fields */}
-          {selectedCategory && attributes.length > 0 && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Tags className="h-4 w-4 text-muted-foreground" />
-                  {t("forms.attributes")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {attributes.map((attribute) => {
-                    const existingValue = attributeValues.find(
-                      (v) => v.attribute_id === attribute.id,
-                    )?.value;
+                {/* Unit Conversions */}
+                {flags?.flexible_units !== false && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Package className="h-4 w-4 text-muted-foreground" />
+                        {t("forms.unit_conversions") || "Конверсия единиц"}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {unitConversions.map((conversion, index) => (
+                        <div key={index} className="relative p-4 rounded-lg border bg-card">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                              {t("forms.conversion") || "Конверсия"} #{index + 1}
+                            </span>
+                            {index > 0 && (
+                              <Button type="button" variant="ghost" size="sm" className="text-destructive h-8 px-2" onClick={() => setUnitConversions(unitConversions.filter((_, i) => i !== index))}>
+                                <Trash2 className="h-4 w-4 mr-1" />{t("common.delete") || "Удалить"}
+                              </Button>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">{t("forms.from_unit") || "Из"}</Label>
+                              <select className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm" value={conversion.from_unit || ""} onChange={(e) => { const c = [...unitConversions]; c[index] = { ...c[index], from_unit: parseInt(e.target.value, 10) }; setUnitConversions(c); }}>
+                                <option value="">{t("forms.from_unit") || "Из"}</option>
+                                {availableMeasurements.map((m) => (<option key={m.id} value={m.id}>{m.name || m.measurement_name}</option>))}
+                              </select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">{t("forms.to_unit") || "К"}</Label>
+                              <select className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm" value={conversion.to_unit || ""} onChange={(e) => { const c = [...unitConversions]; c[index] = { ...c[index], to_unit: parseInt(e.target.value, 10) }; setUnitConversions(c); }}>
+                                <option value="">{t("forms.to_unit") || "К"}</option>
+                                {availableMeasurements.map((m) => (<option key={m.id} value={m.id}>{m.name || m.measurement_name}</option>))}
+                              </select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">{t("forms.factor") || "Коэффициент"}</Label>
+                              <Input type="number" step="any" value={conversion.factor || ""} onChange={(e) => { const c = [...unitConversions]; c[index] = { ...c[index], factor: e.target.value }; setUnitConversions(c); }} placeholder={t("forms.factor") || "Коэффициент"} />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => setUnitConversions([...unitConversions, { from_unit: 0, to_unit: 0, factor: "" }])}>
+                        <Plus className="h-4 w-4 mr-2" />{t("common.add") || "Добавить конверсию"}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
 
-                    const handleAttributeChange = (
-                      value: string | boolean | number[],
-                    ) => {
-                      setAttributeValues((prev) => {
-                        const existing = prev.find(
-                          (v) => v.attribute_id === attribute.id,
-                        );
-                        if (existing) {
-                          return prev.map((v) =>
-                            v.attribute_id === attribute.id ? { ...v, value } : v,
-                          );
-                        }
-                        return [...prev, { attribute_id: attribute.id!, value }];
-                      });
-                    };
+              {/* Tab: Advanced */}
+              <TabsContent value="advanced" className="space-y-6">
+                {/* Tracking Toggles */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Settings className="h-4 w-4 text-muted-foreground" />
+                      {t("forms.tracking") || "Отслеживание"}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {flags?.has_expiry !== false && (
+                        <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                          <Label htmlFor="track_expiry" className="cursor-pointer text-sm">{t("forms.track_expiry") || "Срок годности"}</Label>
+                          <Switch id="track_expiry" checked={trackExpiry} onCheckedChange={setTrackExpiry} />
+                        </div>
+                      )}
+                      {(flags?.has_serial !== false || flags?.has_imei !== false) && (
+                        <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                          <Label htmlFor="track_serial_numbers" className="cursor-pointer text-sm">
+                            {flags?.has_imei ? "IMEI" : (t("forms.track_serial_numbers") || "Серийные номера")}
+                          </Label>
+                          <Switch id="track_serial_numbers" checked={trackSerialNumbers} onCheckedChange={setTrackSerialNumbers} />
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
 
-                    switch (attribute.field_type) {
-                      case "string":
-                        return (
-                          <div key={attribute.id} className="space-y-2">
-                            <Label>{attribute.translations.ru}</Label>
-                            <input
-                              type="text"
-                              className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-                              value={existingValue?.toString() || ""}
-                              onChange={(e) => handleAttributeChange(e.target.value)}
-                            />
-                          </div>
-                        );
-                      case "number":
-                        return (
-                          <div key={attribute.id} className="space-y-2">
-                            <Label>{attribute.translations.ru}</Label>
-                            <input
-                              type="number"
-                              className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-                              value={existingValue?.toString() || ""}
-                              onChange={(e) => handleAttributeChange(e.target.value)}
-                            />
-                          </div>
-                        );
-                      case "boolean":
-                        return (
-                          <div key={attribute.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
-                            <Label className="cursor-pointer">{attribute.translations.ru}</Label>
-                            <Switch
-                              checked={!!existingValue}
-                              onCheckedChange={handleAttributeChange}
-                            />
-                          </div>
-                        );
-                      case "choice":
-                        return attribute.choices ? (
-                          <div key={attribute.id} className="space-y-2">
-                            <Label>{attribute.translations.ru}</Label>
-                            <select
-                              className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-                              value={existingValue?.toString() || ""}
-                              onChange={(e) => handleAttributeChange(e.target.value)}
-                            >
-                              <option value="">{t("placeholders.select_option")}</option>
-                              {attribute.choices.map((choice) => (
-                                <option key={choice} value={choice}>{choice}</option>
-                              ))}
-                            </select>
-                          </div>
-                        ) : null;
-                      case "date":
-                        return (
-                          <div key={attribute.id} className="space-y-2">
-                            <Label>{attribute.translations.ru}</Label>
-                            <input
-                              type="date"
-                              className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-                              value={existingValue?.toString() || ""}
-                              onChange={(e) => handleAttributeChange(e.target.value)}
-                            />
-                          </div>
-                        );
-                      case "many2many":
-                        return attribute.related_objects ? (
-                          <div key={attribute.id} className="col-span-full">
-                            <MultiSelect
-                              label={attribute.translations.ru}
-                              options={attribute.related_objects.map(
-                                (obj: { id: number; name: string }) => ({
-                                  id: obj.id,
-                                  name: obj.name,
-                                }),
-                              )}
-                              value={Array.isArray(existingValue) ? (existingValue as number[]) : []}
-                              onChange={(selectedIds) => handleAttributeChange(selectedIds)}
-                              placeholder={t("placeholders.select_options")}
-                            />
-                          </div>
-                        ) : null;
-                      default:
-                        return null;
-                    }
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                {/* Attributes */}
+                {selectedCategory && attributes.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Tags className="h-4 w-4 text-muted-foreground" />
+                        {t("forms.attributes")}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {attributes.map((attribute) => {
+                          const existingValue = attributeValues.find((v) => v.attribute_id === attribute.id)?.value;
+                          const handleChange = (value: string | boolean | number[]) => {
+                            setAttributeValues((prev) => {
+                              const existing = prev.find((v) => v.attribute_id === attribute.id);
+                              if (existing) return prev.map((v) => v.attribute_id === attribute.id ? { ...v, value } : v);
+                              return [...prev, { attribute_id: attribute.id!, value }];
+                            });
+                          };
+                          switch (attribute.field_type) {
+                            case "string": return (
+                              <div key={attribute.id} className="space-y-2">
+                                <Label>{attribute.translations.ru}</Label>
+                                <Input value={existingValue?.toString() || ""} onChange={(e) => handleChange(e.target.value)} />
+                              </div>
+                            );
+                            case "number": return (
+                              <div key={attribute.id} className="space-y-2">
+                                <Label>{attribute.translations.ru}</Label>
+                                <Input type="number" value={existingValue?.toString() || ""} onChange={(e) => handleChange(e.target.value)} />
+                              </div>
+                            );
+                            case "boolean": return (
+                              <div key={attribute.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                                <Label className="cursor-pointer">{attribute.translations.ru}</Label>
+                                <Switch checked={!!existingValue} onCheckedChange={handleChange} />
+                              </div>
+                            );
+                            case "choice": return attribute.choices ? (
+                              <div key={attribute.id} className="space-y-2">
+                                <Label>{attribute.translations.ru}</Label>
+                                <select className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm" value={existingValue?.toString() || ""} onChange={(e) => handleChange(e.target.value)}>
+                                  <option value="">{t("placeholders.select_option")}</option>
+                                  {attribute.choices.map((c) => (<option key={c} value={c}>{c}</option>))}
+                                </select>
+                              </div>
+                            ) : null;
+                            case "date": return (
+                              <div key={attribute.id} className="space-y-2">
+                                <Label>{attribute.translations.ru}</Label>
+                                <Input type="date" value={existingValue?.toString() || ""} onChange={(e) => handleChange(e.target.value)} />
+                              </div>
+                            );
+                            case "many2many": return attribute.related_objects ? (
+                              <div key={attribute.id} className="col-span-full">
+                                <MultiSelect
+                                  label={attribute.translations.ru}
+                                  options={attribute.related_objects.map((obj: { id: number; name: string }) => ({ id: obj.id, name: obj.name }))}
+                                  value={Array.isArray(existingValue) ? (existingValue as number[]) : []}
+                                  onChange={(ids) => handleChange(ids)}
+                                  placeholder={t("placeholders.select_options")}
+                                />
+                              </div>
+                            ) : null;
+                            default: return null;
+                          }
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
-          {/* Submit Button */}
-          <div className="flex items-center justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate("/products")}
-            >
-              {t("common.cancel") || "Отмена"}
-            </Button>
-            <Button type="submit" disabled={createProduct.isPending}>
-              {createProduct.isPending
-                ? (t("common.sending") || "Сохранение...")
-                : (t("common.submit") || "Создать товар")}
-            </Button>
-          </div>
-        </ResourceForm>
+                {!selectedCategory && (
+                  <Card>
+                    <CardContent className="py-8 text-center text-muted-foreground">
+                      {t("messages.select_category_for_attributes") || "Выберите категорию, чтобы увидеть атрибуты"}
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            </Tabs>
+
+            {/* Submit Footer */}
+            <div className="flex items-center justify-between gap-3 mt-8 pt-6 border-t">
+              <Button type="button" variant="ghost" onClick={() => navigate("/products")}>
+                {t("common.cancel") || "Отмена"}
+              </Button>
+              <div className="flex items-center gap-3">
+                <Button type="submit" disabled={createProduct.isPending} size="lg">
+                  {createProduct.isPending
+                    ? (t("common.sending") || "Сохранение...")
+                    : ((t("common.create") || "Создать") + " " + (t("table.product") || "товар"))}
+                </Button>
+              </div>
+            </div>
+          </form>
+        </FormProvider>
       </div>
     </div>
   );

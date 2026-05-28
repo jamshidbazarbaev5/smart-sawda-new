@@ -6,11 +6,23 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 export interface Supplier {
   id?: number;
   name: string;
-  balance_type?: string;
   phone_number: string;
+  // v2 fields
+  company_name?: string;
+  address?: string;
+  tax_id?: string;
+  contact_person?: string;
+  default_currency?: number | null;
+  balances?: Array<{ id: number; currency: number; amount: string; currency_name?: string; currency_code?: string }>;
+  notes?: string;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  // backward compat (v1 fields, may or may not be present)
+  balance_type?: string;
   total_debt?: string;
   total_paid?: string;
-  balance_in_usd?:string;
+  balance_in_usd?: string;
   remaining_debt?: string;
   balance?: string | null;
 }

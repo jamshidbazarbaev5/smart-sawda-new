@@ -2,24 +2,27 @@ import { createResourceApiHooks } from '../helpers/createResourceApi';
 import { useMutation } from '@tanstack/react-query';
 import api from './api';
 
-// Types
 export interface User {
   id?: number;
   name: string;
   phone_number: string;
-  role: string;
+  role: number | null;
+  store: number | null;
   password?: string;
   is_active: boolean;
-  sale_period:string;
   is_mobile_user: boolean;
   can_view_quantity?: boolean;
-  store_write?: number | null;
+  can_view_cost_price?: boolean;
+  can_view_profit?: boolean;
+  fixed_salary?: string;
+  sales_percentage?: string;
+  has_active_shift?: boolean;
+  is_superuser?: boolean;
+  sale_period?: string;
 }
 
-// API endpoints
 const USER_URL = 'users/';
 
-// Create user API hooks using the factory function
 export const {
   useGetResources: useGetUsers,
   useGetResource: useGetUser,
@@ -28,7 +31,6 @@ export const {
   useDeleteResource: useDeleteUser,
 } = createResourceApiHooks<User>(USER_URL, 'users');
 
-// Custom hook for updating current user profile
 export const useUpdateCurrentUser = () => {
   return useMutation({
     mutationFn: async (data: Partial<User>) => {

@@ -2,39 +2,27 @@ import { createResourceApiHooks } from '../helpers/createResourceApi';
 
 // Types
 export interface Income {
-  id?: number;
-  source: string;
- 
-
-  store_read?: {
-    id: number;
-    name: string;
-    address: string;
-    phone_number: string;
-    budget: string;
-    created_at: string;
-    is_main: boolean;
-    parent_store: number | null;
-    owner: number;
-  };
-  description: {
-    Amount: string;
-    Worker?: string;
-    'Sold Date'?: string;
-    'Timestamp'?: string;
-    Client?: string;
-    Payments?: Array<{
-      Method: string;
-      Amount: string;
-    }>;
-    Items?: Array<{
-      Product: string;
-      Quantity: string;
-      'Selling Method': string;
-      Subtotal: string;
-    }>;
-  };
+  id: number;
+  store: number;
+  store_name: string;
+  shift: number | null;
+  worker: number;
+  sale: number | null;
+  debt_payment: number | null;
+  total_amount: string;
   timestamp: string;
+  description: string;
+  payments: Array<{
+    id: number;
+    payment_method: {
+      id: number;
+      name: string;
+      currency: { id: number; name: string; symbol: string };
+    };
+    amount: string;
+  }>;
+  created_at: string;
+  updated_at: string;
 }
 
 // API endpoints

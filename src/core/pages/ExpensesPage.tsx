@@ -14,60 +14,38 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGetStores } from "../api/store";
-import { useGetExpenseNames } from "../api/expense-name";
 import { Input } from "@/components/ui/input";
-
 import { useCurrentUser } from "../hooks/useCurrentUser";
 
 export default function ExpensesPage() {
   const { t } = useTranslation();
   const navigation = useNavigate();
   const [selectedStore, setSelectedStore] = useState<string>("all");
-  const [selectedExpenseName, setSelectedExpenseName] = useState<string>("all");
-  const [selectedPaymentType, setSelectedPaymentType] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 30;
   const { data: currentUser } = useCurrentUser();
 
-  // Reset to page 1 when any filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [
-    selectedStore,
-    selectedExpenseName,
-    selectedPaymentType,
-    dateFrom,
-    dateTo,
-  ]);
+  }, [selectedStore, dateFrom, dateTo]);
 
   const { data: expensesData, isLoading } = useGetExpenses({
     params: {
       ...(selectedStore !== "all" && { store: selectedStore }),
-      ...(selectedExpenseName !== "all" && {
-        expense_name: selectedExpenseName,
-      }),
-      ...(selectedPaymentType !== "all" && {
-        payment_type: selectedPaymentType,
-      }),
       date_gte: dateFrom || undefined,
       date_lte: dateTo || undefined,
       page: currentPage,
-      // page_size: pageSize,
     },
   });
   const deleteExpense = useDeleteExpense();
 
   const { data: storesData } = useGetStores({});
-  const { data: expenseNamesData } = useGetExpenseNames({ params: { page_size: 1000 } });
 
   const stores = Array.isArray(storesData)
     ? storesData
     : storesData?.results || [];
-  const expenseNames = Array.isArray(expenseNamesData)
-    ? expenseNamesData
-    : expenseNamesData?.results || [];
   const expenses = Array.isArray(expensesData)
     ? expensesData
     : expensesData?.results || [];
@@ -85,35 +63,23 @@ export default function ExpensesPage() {
   const columns = [
     {
       header: t("forms.store"),
-      accessorKey: "store_read.name",
-      cell: (row: Expense) => row.store_read?.name || "-",
+      accessorKey: "store_name",
+      cell: (row: Expense) => row.store_name || "-",
     },
     {
-      header: t("forms.user"),
-      accessorKey: "user_name",
-      cell: (row: Expense) => row.user_name || "-",
-    },
-    {
-      header: t("forms.expense_name"),
-      accessorKey: "expense_name_read.name",
-      cell: (row: Expense) => row.expense_name_read?.name || "-",
-    },
-
-    {
-      header: t("forms.amount3"),
+      header: t("forms.amount"),
       accessorKey: "amount",
-      cell: (row: any) => (
+      cell: (row: Expense) => (
         <div className="text-center font-medium">
-          {Number(row.amount).toLocaleString()} {row.payment_type === 'Валюта' ? '$' : ''}
+          {Number(row.amount).toLocaleString()} {row.currency?.symbol || ""}
         </div>
       ),
     },
     {
       header: t("forms.date"),
-      accessorKey: "expense.date",
-      cell: (row: any) => (
+      accessorKey: "date",
+      cell: (row: Expense) => (
         <p>
-          {" "}
           {row.date
             ? new Date(row.date).toLocaleDateString("ru-RU", {
                 year: "numeric",
@@ -169,38 +135,6 @@ export default function ExpensesPage() {
           </Select>
         )}
 
-        <Select
-          value={selectedExpenseName}
-          onValueChange={setSelectedExpenseName}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={t("placeholders.select_expense_name")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("common.all_expense_names")}</SelectItem>
-            {expenseNames.map((expenseName) => (
-              <SelectItem key={expenseName.id} value={String(expenseName.id)}>
-                {expenseName.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={selectedPaymentType}
-          onValueChange={setSelectedPaymentType}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={t("placeholders.select_payment_type")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("common.all_payment_types")}</SelectItem>
-            <SelectItem value="Наличные">{t("payment_types.cash")}</SelectItem>
-            <SelectItem value="Карта">{t("payment_types.card")}</SelectItem>
-            <SelectItem value="Валюта">{t("forms.rate")}</SelectItem>
-            <SelectItem value="Click">{t("payment_types.click")}</SelectItem>
-          </SelectContent>
-        </Select>
         <Input
           type="date"
           value={dateFrom}

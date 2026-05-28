@@ -2,30 +2,20 @@ import { createResourceApiHooks } from "../helpers/createResourceApi";
 
 // Types
 export interface Expense {
-  id?: number;
-  store: number;
+  id: number;
+  store: number | null;
+  store_name?: string;
+  shift: number | null;
+  category: number | null;
+  payment_method: number;
   amount: string;
-  expense_name: number;
-  user_name?:string;
-  comment?: string;
-  payment_method: string;
-  store_read?: {
-    id: number;
-    name: string;
-    address: string;
-    phone_number: string;
-    is_main: boolean;
-    parent_store: number | null;
-    owner: number;
-  };
-  expense_name_read?: {
-    id: number;
-    name: string;
-  };
+  currency: { id: number; name: string; symbol: string };
+  comment: string;
+  date: string;
 }
 
 // API endpoints
-const EXPENSE_URL = "budget/expenses/";
+const EXPENSE_URL = "expenses/";
 
 // Create expense API hooks using the factory function
 export const {

@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Wallet, ArrowUp, ArrowDown, CreditCard, History, MoreHorizontal, AlertCircle } from "lucide-react";
 
 const formatPrice = (value: number | string | null | undefined) => {
@@ -56,35 +57,12 @@ const columns = (t: (key: string) => string) => [
     accessorKey: "phone_number",
   },
   {
-    header: t("table.balance") + " (UZS)",
-    accessorKey: "balance_uzs",
-    cell: (row: Supplier) => {
+    header: t("table.is_active"),
+    accessorKey: (row: Supplier) => {
       const s: any = row;
-      return `${formatPrice(s.balance_uzs || 0)} UZS`;
-    },
-  },
-  {
-    header: t("table.balance") + " (USD)",
-    accessorKey: "balance_usd",
-    cell: (row: Supplier) => {
-      const s: any = row;
-      return `${formatPrice(s.balance_usd || 0)} USD`;
-    },
-  },
-  {
-    header: t("table.remaining_debt") + " (UZS)",
-    accessorKey: "remaining_debt_uzs",
-    cell: (row: Supplier) => {
-      const s: any = row;
-      return `${formatPrice(s.remaining_debt_uzs || 0)} UZS`;
-    },
-  },
-  {
-    header: t("table.remaining_debt") + " (USD)",
-    accessorKey: "remaining_debt_usd",
-    cell: (row: Supplier) => {
-      const s: any = row;
-      return `${formatPrice(s.remaining_debt_usd || 0)} USD`;
+      return s.is_active !== false
+        ? <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">{t("common.yes")}</Badge>
+        : <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">{t("common.no")}</Badge>;
     },
   },
 ];

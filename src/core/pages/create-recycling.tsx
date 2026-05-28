@@ -310,8 +310,8 @@ export default function CreateRecycling() {
   const baseMeasurement = baseUnitId
     ? measurements.find((m: any) => m.id === baseUnitId)
     : undefined;
-  const unitPlaceholder = baseMeasurement?.measurement_name
-    ? `${t("placeholders.enter_quantity")}: ${baseMeasurement.measurement_name.toLowerCase()}`
+  const unitPlaceholder = baseMeasurement
+    ? `${t("placeholders.enter_quantity")}: ${(baseMeasurement.name || baseMeasurement.measurement_name || '').toLowerCase()}`
     : t("placeholders.enter_quantity");
 
   // Update fields with dynamic options

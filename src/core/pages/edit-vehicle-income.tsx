@@ -125,7 +125,11 @@ export default function EditVehicleIncome() {
 
     setIsCreatingVehicle(true);
     try {
-      const newVehicle = await createVehicle.mutateAsync({ name: newVehicleName });
+      const newVehicle = await createVehicle.mutateAsync({
+        name: newVehicleName,
+        plate_number: '',
+        is_active: true,
+      });
       toast.success(t('messages.success.created', { item: t('navigation.vehicles') }));
  setVehicleId((newVehicle?.id ?? '').toString());
       setNewVehicleName('');
@@ -146,7 +150,11 @@ export default function EditVehicleIncome() {
 
     setIsCreatingDriver(true);
     try {
-      const newDriver = await createDriver.mutateAsync({ full_name: newDriverName });
+      const newDriver = await createDriver.mutateAsync({
+        full_name: newDriverName,
+        phone_number: '',
+        is_active: true,
+      });
       toast.success(t('messages.success.created', { item: t('navigation.drivers') }));
       setDriverId((newDriver?.id ?? '').toString());
       setNewDriverName('');

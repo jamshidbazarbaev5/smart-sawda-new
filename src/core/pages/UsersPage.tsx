@@ -1,50 +1,25 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription } from "@/components/ui/dialog";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { ResourceTable } from "../helpers/ResourseTable";
 import { toast } from "sonner";
-import {
-  type User,
-  useUpdateUser,
-  useDeleteUser,
-  useGetUsers,
-} from "../api/user";
+import { type User, useUpdateUser, useDeleteUser, useGetUsers } from "../api/user";
+import { useGetRoles } from "../api/role";
 import { useTranslation } from "react-i18next";
-import {
-  Users,
-  Pencil,
-  Trash2,
-  Plus,
-} from "lucide-react";
+import { Users, Pencil, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useGetStores } from "../api/store";
 
 interface ExtendedUser extends User {
-  store_read?: {
-    id: number;
-    name: string;
-    address: string;
-    phone_number: string;
-    budget: string;
-    created_at: string;
-    is_main: boolean;
-    parent_store: number | null;
-    owner: number;
-  };
-  is_mobile_user: boolean;
+  store_read?: { id: number; name: string };
+  role_read?: { id: number; name: string };
   is_superuser?: boolean;
 }
 
-const userFields = (t: any, stores: any[] = []) => [
+const userFields = (t: any, roles: any[] = [], stores: any[] = []) => [
   {
     name: "name",
     label: t("forms.fio"),
@@ -65,21 +40,15 @@ const userFields = (t: any, stores: any[] = []) => [
     type: "select",
     placeholder: t("placeholders.select_role"),
     required: true,
-    options: [
-      { value: t("roles.admin"), label: t("roles.admin") },
-      { value: t("roles.seller"), label: t("roles.seller") },
-    ],
+    options: roles.map((r: any) => ({ value: r.id, label: r.name })),
   },
   {
-    name: "store_write",
+    name: "store",
     label: t("forms.store"),
     type: "select",
     placeholder: t("placeholders.select_store"),
     required: true,
-    options: stores.map((store) => ({
-      value: store.id.toString(),
-      label: store.name,
-    })),
+    options: stores.map((s: any) => ({ value: s.id, label: s.name })),
   },
   {
     name: "is_active",
@@ -117,16 +86,40 @@ const userFields = (t: any, stores: any[] = []) => [
     ],
   },
   {
-    name: "sale_period",
-    label: t("forms.sale_period"),
+    name: "can_view_cost_price",
+    label: t("forms.can_view_cost_price"),
     type: "select",
-    placeholder: t("placeholders.select_sale_period"),
+    placeholder: t("placeholders.select_permission"),
     required: true,
+    defaultValue: true,
     options: [
-      { value: "day", label: t("sale_period.day") },
-      { value: "week", label: t("sale_period.week") },
-      { value: "all", label: t("sale_period.all") },
+      { value: true, label: t("common.yes") },
+      { value: false, label: t("common.no") },
     ],
+  },
+  {
+    name: "can_view_profit",
+    label: t("forms.can_view_profit"),
+    type: "select",
+    placeholder: t("placeholders.select_permission"),
+    required: true,
+    defaultValue: true,
+    options: [
+      { value: true, label: t("common.yes") },
+      { value: false, label: t("common.no") },
+    ],
+  },
+  {
+    name: "fixed_salary",
+    label: t("forms.fixed_salary"),
+    type: "text",
+    placeholder: t("placeholders.enter_salary"),
+  },
+  {
+    name: "sales_percentage",
+    label: t("forms.sales_percentage"),
+    type: "text",
+    placeholder: t("placeholders.enter_percentage"),
   },
   {
     name: "password",
@@ -155,20 +148,17 @@ export default function UsersPage() {
     },
   });
   const { data: storesData } = useGetStores({});
+  const { data: rolesData } = useGetRoles({});
 
-  const results: any[] = Array.isArray(staffsData)
-    ? staffsData
-    : staffsData?.results || [];
-  const totalCount = Array.isArray(staffsData)
-    ? staffsData.length
-    : staffsData?.count || 0;
+  const results: any[] = Array.isArray(staffsData) ? staffsData : staffsData?.results || [];
+  const totalCount = Array.isArray(staffsData) ? staffsData.length : staffsData?.count || 0;
 
   const users: ExtendedUser[] = results;
+  const stores = Array.isArray(storesData) ? storesData : storesData?.results || [];
+  const roles = Array.isArray(rolesData) ? rolesData : rolesData?.results || [];
 
   const { mutate: updateUser, isPending: isUpdating } = useUpdateUser();
   const { mutate: deleteUser } = useDeleteUser();
-
-  const stores = Array.isArray(storesData) ? storesData : storesData?.results || [];
 
   const handleEdit = (user: ExtendedUser) => {
     setEditingUser(user);
@@ -178,24 +168,26 @@ export default function UsersPage() {
   const handleUpdateSubmit = (data: any) => {
     if (!editingUser?.id) return;
 
-    // @ts-ignore
-    const updateData: Partial<User> = {
+    const updateData: Record<string, unknown> = {
       id: editingUser.id,
       name: data.name || "",
       phone_number: data.phone_number || "",
-      role: data.role || "",
+      role: data.role ? Number(data.role) : null,
+      store: data.store ? Number(data.store) : null,
       is_active: data.is_active === "true" || data.is_active === true,
-      store_write: Number(data.store_write),
       is_mobile_user: data.is_mobile_user === "true" || data.is_mobile_user === true,
       can_view_quantity: data.can_view_quantity === "true" || data.can_view_quantity === true,
-      sale_period: data.sale_period,
+      can_view_cost_price: data.can_view_cost_price === "true" || data.can_view_cost_price === true,
+      can_view_profit: data.can_view_profit === "true" || data.can_view_profit === true,
+      fixed_salary: data.fixed_salary || undefined,
+      sales_percentage: data.sales_percentage || undefined,
     };
 
     if (data.password) {
       updateData.password = data.password;
     }
 
-    updateUser(updateData as User, {
+    updateUser(updateData as unknown as User, {
       onSuccess: () => {
         const message = data.password
           ? t("messages.user_password_updated")
@@ -210,25 +202,23 @@ export default function UsersPage() {
   const handleDelete = (id: number) => {
     if (!id) return;
     if (!window.confirm(t("messages.confirm_delete") || "Вы уверены?")) return;
-
     deleteUser(id, {
       onSuccess: () => toast.success(t("messages.user_deleted")),
       onError: () => toast.error(t("messages.delete_failed")),
     });
   };
 
-  const getRoleBadge = (role: string) => {
+  const getRoleBadge = (user: any) => {
+    const roleName = user.role_name|| String(user.role_name|| "");
     const colors: Record<string, string> = {
-      owner: "bg-purple-100 text-purple-700",
       admin: "bg-blue-100 text-blue-700",
-      seller: "bg-green-100 text-green-700",
-      администратор: "bg-blue-100 text-blue-700",
-      продавец: "bg-green-100 text-green-700",
+      cashier: "bg-green-100 text-green-700",
+      warehouse: "bg-orange-100 text-orange-700",
     };
-    const colorClass = colors[role?.toLowerCase()] || "bg-gray-100 text-gray-700";
+    const colorClass = colors[roleName?.toLowerCase()] || "bg-gray-100 text-gray-700";
     return (
       <span className={`text-xs px-2 py-1 rounded-full font-medium ${colorClass}`}>
-        {role}
+        {roleName}
       </span>
     );
   };
@@ -253,7 +243,7 @@ export default function UsersPage() {
     {
       header: t("forms.role"),
       accessorKey: "role",
-      cell: (user: ExtendedUser) => getRoleBadge(user.role),
+      cell: (user: ExtendedUser) => getRoleBadge(user),
     },
     {
       header: t("forms.store"),
@@ -264,13 +254,7 @@ export default function UsersPage() {
       header: t("forms.status"),
       accessorKey: "is_active",
       cell: (user: ExtendedUser) => (
-        <span
-          className={`text-xs px-2 py-1 rounded-full font-medium ${
-            user.is_active
-              ? "bg-emerald-100 text-emerald-700"
-              : "bg-red-100 text-red-700"
-          }`}
-        >
+        <span className={`text-xs px-2 py-1 rounded-full font-medium ${user.is_active ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
           {user.is_active ? t("common.active") : t("common.inactive")}
         </span>
       ),
@@ -289,27 +273,13 @@ export default function UsersPage() {
       accessorKey: "actions",
       cell: (user: ExtendedUser) => (
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEdit(user);
-            }}
-            className="hover:bg-primary/5 hover:text-primary"
-          >
+          <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEdit(user); }}
+            className="hover:bg-primary/5 hover:text-primary">
             <Pencil className="w-4 h-4" />
           </Button>
           {!user.is_superuser && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete(user.id!);
-              }}
-              className="hover:bg-red-50 hover:text-red-600"
-            >
+            <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleDelete(user.id!); }}
+              className="hover:bg-red-50 hover:text-red-600">
               <Trash2 className="w-4 h-4" />
             </Button>
           )}
@@ -325,16 +295,11 @@ export default function UsersPage() {
           <Users className="w-6 h-6 text-primary" />
           <h1 className="text-2xl font-bold">{t("navigation.users")}</h1>
         </div>
-        <Button
-          onClick={() => navigate("/create-user")}
-          className="flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          {t("common.create")}
+        <Button onClick={() => navigate("/create-user")} className="flex items-center gap-2">
+          <Plus className="w-4 h-4" /> {t("common.create")}
         </Button>
       </div>
 
-      {/* Filters */}
       <Card className="p-4 mb-6">
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-sm font-semibold">{t("common.filters")}</h3>
@@ -349,8 +314,9 @@ export default function UsersPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("common.all")}</SelectItem>
-              <SelectItem value="Продавец">{t("roles.seller")}</SelectItem>
-              <SelectItem value="Администратор">{t("roles.admin")}</SelectItem>
+              {roles.map((r: any) => (
+                <SelectItem key={r.id} value={r.id.toString()}>{r.name}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
@@ -361,9 +327,7 @@ export default function UsersPage() {
             <SelectContent>
               <SelectItem value="all">{t("forms.all_stores")}</SelectItem>
               {stores.map((store: any) => (
-                <SelectItem key={store.id} value={store.id.toString()}>
-                  {store.name}
-                </SelectItem>
+                <SelectItem key={store.id} value={store.id.toString()}>{store.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -382,23 +346,22 @@ export default function UsersPage() {
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent>
+          <DialogDescription className="mb-4" />
           <ResourceForm
-            fields={userFields(
-              t,
-              Array.isArray(storesData)
-                ? storesData
-                : storesData?.results || [],
-            )}
+            fields={userFields(t, roles, stores)}
             onSubmit={handleUpdateSubmit}
             defaultValues={{
               name: editingUser?.name,
               phone_number: editingUser?.phone_number,
-              role: editingUser?.role,
-              store_write: editingUser?.store_read?.id?.toString(),
+              role: editingUser?.role?.toString() || "",
+              store: editingUser?.store?.toString() || editingUser?.store_read?.id?.toString() || "",
               is_active: editingUser?.is_active !== undefined ? editingUser.is_active.toString() : "true",
               is_mobile_user: editingUser?.is_mobile_user !== undefined ? editingUser.is_mobile_user.toString() : "true",
               can_view_quantity: editingUser?.can_view_quantity !== undefined ? editingUser.can_view_quantity.toString() : "true",
-              sale_period: (editingUser as any)?.sale_period || "",
+              can_view_cost_price: (editingUser as any)?.can_view_cost_price !== undefined ? (editingUser as any).can_view_cost_price.toString() : "true",
+              can_view_profit: (editingUser as any)?.can_view_profit !== undefined ? (editingUser as any).can_view_profit.toString() : "true",
+              fixed_salary: (editingUser as any)?.fixed_salary || "",
+              sales_percentage: (editingUser as any)?.sales_percentage || "",
             }}
             isSubmitting={isUpdating}
             title={t("common.edit")}

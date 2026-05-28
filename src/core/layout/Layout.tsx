@@ -11,12 +11,21 @@ import {
   Receipt,
   PlusCircle,
   BanknoteIcon,
+  Layers,
   LogOut,
   User,
   ChevronDown,
   type LucideIcon,
   CreditCard,
-  // PrinterCheck,
+  Shield,
+  RefreshCw,
+  Tag,
+  Users,
+  AlertCircle,
+  FolderOpen,
+  Car,
+  IdCard,
+  Wallet,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
@@ -25,6 +34,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLogout } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
 import { useCurrentUser } from "../hooks/useCurrentUser";
+import { useFrontendConfig } from "../api/frontend-config";
 import {
   WideDialog,
   WideDialogContent,
@@ -73,6 +83,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { currentUser } = useAuth();
   const { mutate: logout } = useLogout();
   const { data: userData } = useCurrentUser();
+
+  const { data: frontendConfig } = useFrontendConfig();
+  const menuAccess = frontendConfig?.menu;
 
   const handleLogout = () => {
     logout();
@@ -197,7 +210,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [location.pathname]);
 
   const navItems: NavItem[] = (() => {
-    const baseItems: NavItem[] = [
+    let baseItems: NavItem[] = [
       {
         icon: Package,
         label: t("navigation.dashobard"),
@@ -246,6 +259,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             },
           ]
         : []),
+      {
+        icon: Package,
+        label: t("navigation.stock_entries"),
+        href: "/stock-entries",
+      },
       { icon: ShoppingBag, label: t("navigation.sale"), href: "/sales" },
       // Activity/Report - only for superadmin and admin
       ...(currentUser?.is_superuser || currentUser?.role === "Администратор"
@@ -281,6 +299,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         icon: BanknoteIcon,
         label: t("navigation.vehicle_incomes"),
         href: "/vehicle-incomes",
+      },
+      {
+        icon: Car,
+        label: t("navigation.vehicles") || "Транспорт",
+        href: "/vehicles",
+      },
+      {
+        icon: IdCard,
+        label: t("navigation.drivers") || "Водители",
+        href: "/drivers",
+      },
+      {
+        icon: Wallet,
+        label: t("navigation.payouts") || "Выплаты сотрудникам",
+        href: "/payouts",
+      },
+      {
+        icon: Tag,
+        label: t("navigation.label_generator") || "Генератор этикеток",
+        href: "/label-generator",
       },
       {
         icon: User2,
@@ -361,9 +399,34 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             href: "/categories",
           },
           {
+            icon: Layers,
+            label: t("navigation.variation_options"),
+            href: "/variation-options",
+          },
+          {
+            icon: CreditCard,
+            label: t("navigation.payment_methods"),
+            href: "/payment-methods",
+          },
+          {
+            icon: Shield,
+            label: t("navigation.roles"),
+            href: "/roles",
+          },
+          {
+            icon: Tag,
+            label: t("navigation.client_types"),
+            href: "/client-types",
+          },
+          {
             icon: Ruler,
             label: t("navigation.measurements"),
             href: "/measurements",
+          },
+          {
+            icon: RefreshCw,
+            label: t("navigation.exchange_rates"),
+            href: "/exchange-rates",
           },
           {
             icon: BanknoteIcon,
@@ -403,12 +466,93 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             href: "/charge-types",
           },
           {
+            icon: AlertCircle,
+            label: t("navigation.writeoff_reasons"),
+            href: "/writeoff-reasons",
+          },
+          {
+            icon: FolderOpen,
+            label: t("navigation.expense_categories"),
+            href: "/expense-categories",
+          },
+          {
+            icon: AlertCircle,
+            label: t("navigation.penalties"),
+            href: "/penalties",
+          },
+          {
             icon: Receipt,
             label: t("navigation.cassas"),
             href: "/cassas",
           },
+          {
+            icon: Users,
+            label: t("navigation.customers"),
+            href: "/customers",
+          },
         ],
       });
+    }
+
+    // Filter by menu permissions if available
+    if (menuAccess) {
+      const menuHrefMap: Record<string, keyof typeof menuAccess> = {
+        "/dashboard": "dashboard",
+        "/pos-fullscreen": "pos",
+        "/stock": "stocks",
+        "/product-stock-balance": "stocks",
+        "/stock-entries": "stock_entries",
+        "/sales": "sales_list",
+        "/activity": "report_sales",
+        "/product-movements": "movements",
+        "/clients": "customers",
+        "/debts": "debts",
+        "/expense": "expenses",
+        "/income": "incomes",
+        "/recyclings": "recyclings",
+        "/shifts": "shifts",
+        "/transfers": "transfers",
+        "/writeoffs": "writeoffs",
+        "/revaluations": "revaluations",
+        "/stores": "stores",
+        "/categories": "categories",
+        "/products": "products",
+        "/users": "users",
+        "/roles": "roles",
+        "/payment-methods": "payment_methods",
+        "/measurements": "units",
+        "/currencies": "currencies",
+        "/suppliers": "suppliers",
+        "/client-types": "client_types",
+        "/charge-types": "charge_types",
+        "/expense-categories": "expense_categories",
+        "/writeoff-reasons": "writeoff_reasons",
+        "/label-sizes": "label_sizes",
+        "/receipt-designer": "receipt_templates",
+        "/cash-inflow-names": "cash_inflows",
+        "/sponsors": "sponsors",
+        "/drivers": "drivers",
+        "/payouts": "staff_payroll",
+        "/vehicle-incomes": "drivers",
+        "/vehicles": "drivers",
+        "/cassas": "stores",
+        "/customers": "customers",
+        "/penalties": "users",
+      };
+
+      const isMenuItemAllowed = (item: NavItem): boolean => {
+        if (item.href) {
+          const key = menuHrefMap[item.href];
+          if (key && !menuAccess[key]) return false;
+        }
+        if (item.submenu) {
+          item.submenu = item.submenu.filter(isMenuItemAllowed);
+          if (item.submenu.length === 0) return false;
+        }
+        return true;
+      };
+
+      baseItems = baseItems.filter(isMenuItemAllowed);
     }
 
     return baseItems;

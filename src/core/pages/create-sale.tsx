@@ -75,6 +75,7 @@ import { Input } from "@/components/ui/input";
 import { useGetStores } from "../api/store";
 import { useCreateClient } from "../api/client";
 import { useGetChargeTypes } from "../api/charge-type";
+import { useGetPaymentMethods } from "../api/payment-methods";
 
 import { useQuery } from "@tanstack/react-query";
 import api, { fetchCurrencyRates } from "../api/api";
@@ -297,6 +298,16 @@ function CreateSale() {
   const chargeTypes: any[] = Array.isArray(chargeTypesData)
     ? chargeTypesData
     : (chargeTypesData as any)?.results || [];
+
+  const { data: paymentMethodsData } = useGetPaymentMethods({});
+  const paymentMethods: any[] = Array.isArray(paymentMethodsData)
+    ? paymentMethodsData
+    : (paymentMethodsData as any)?.results || [];
+  const paymentMethodMap = Object.fromEntries(
+    paymentMethods.map((pm: any) => [pm.name, pm.id])
+  );
+  const foreignCurrencyPm = paymentMethods.find((pm: any) => pm.is_foreign_currency);
+  const foreignCurrencyPmName = foreignCurrencyPm?.name || "Валюта";
 
   // Fetch clients with search API call
   const { data: clientsData, isLoading: clientsLoading } = useQuery({
@@ -1003,7 +1014,6 @@ function CreateSale() {
       // Build the payload based on scenario
       const formattedData = {
         store: parseInt(data.store),
-        payment_method: data.sale_payments[0]?.payment_method || "Наличные",
         total_amount: Number(
           String(data.total_amount).replace(/,/g, "")
         ).toFixed(2),
@@ -1040,17 +1050,17 @@ function CreateSale() {
             : data.sale_payments
                 .map((payment, index) => {
                   const usdAmount =
-                    payment.payment_method === "Валюта" && usdInputValues[index]
+                    payment.payment_method === foreignCurrencyPmName && usdInputValues[index]
                       ? parseFloat(usdInputValues[index])
-                      : payment.payment_method === "Валюта" &&
+                      : payment.payment_method === foreignCurrencyPmName &&
                         payment.exchange_rate
                       ? payment.amount / payment.exchange_rate
                       : payment.amount;
 
                   const paymentData: any = {
-                    payment_method: payment.payment_method,
+                    payment_method: paymentMethodMap[payment.payment_method] || payment.payment_method,
                     amount:
-                      payment.payment_method === "Валюта"
+                      payment.payment_method === foreignCurrencyPmName
                         ? Number(usdAmount).toFixed(2)
                         : Number(
                             String(payment.amount).replace(/,/g, "")
@@ -1058,14 +1068,14 @@ function CreateSale() {
                   };
 
                   if (
-                    payment.payment_method === "Валюта" &&
+                    payment.payment_method === foreignCurrencyPmName &&
                     payment.exchange_rate
                   ) {
                     paymentData.exchange_rate = payment.exchange_rate;
                   }
 
                   if (
-                    payment.payment_method === "Валюта" &&
+                    payment.payment_method === foreignCurrencyPmName &&
                     payment.change_amount
                   ) {
                     paymentData.change_amount = Number(
@@ -1099,6 +1109,7 @@ function CreateSale() {
                     ).toFixed(2)
                   : "0",
                 deposit_payment_method:
+                  paymentMethodMap[form.getValues("sale_debt.deposit_payment_method") || depositPaymentMethod || "Наличные"] ||
                   form.getValues("sale_debt.deposit_payment_method") ||
                   depositPaymentMethod ||
                   "Наличные",
@@ -1113,6 +1124,7 @@ function CreateSale() {
                   ).toFixed(2)
                 : "0",
               deposit_payment_method:
+                paymentMethodMap[form.getValues("sale_debt.deposit_payment_method") || depositPaymentMethod || "Наличные"] ||
                 form.getValues("sale_debt.deposit_payment_method") ||
                 depositPaymentMethod ||
                 "Наличные",
@@ -1769,7 +1781,7 @@ function CreateSale() {
                         }
                         onValueChange={(value) => {
                           field.onChange(value);
-                          if (value === "Валюта") {
+                          if (value === foreignCurrencyPmName) {
                             const defaultRate = currencyRates[0]
                               ? parseFloat(currencyRates[0].rate)
                               : 12500;
@@ -1782,7 +1794,10 @@ function CreateSale() {
                               0
                             );
                           }
-                          if (value !== "Click") {
+                          const clickPm = paymentMethods.find(
+                            (pm: any) => pm.name === "Click"
+                          );
+                          if (clickPm && value !== clickPm.name) {
                             form.setValue(
                               `sale_payments.${index}.comment`,
                               undefined
@@ -1794,25 +1809,17 @@ function CreateSale() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Наличные">
-                            {t("payment.cash")}
-                          </SelectItem>
-                          <SelectItem value="Click">
-                            {t("payment.click")}
-                          </SelectItem>
-                          <SelectItem value="Карта">
-                            {t("payment.card")}
-                          </SelectItem>
-                          <SelectItem value="Перечисление">
-                            {t("payment.per")}
-                          </SelectItem>
-                          <SelectItem value="Валюта">Валюта (USD)</SelectItem>
+                          {paymentMethods.map((pm: any) => (
+                            <SelectItem key={pm.id} value={pm.name}>
+                              {pm.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </FormItem>
                   )}
                 />
-                {payment.payment_method === "Валюта" ? (
+                {payment.payment_method === foreignCurrencyPmName ? (
                   <>
                     <FormField
                       control={form.control}
@@ -1953,7 +1960,7 @@ function CreateSale() {
                         </FormItem>
                       )}
                     />
-                    {payment.payment_method === "Click" && (
+                    {paymentMethods.find((pm: any) => pm.name === "Click") && payment.payment_method === "Click" && (
                       <FormField
                         control={form.control}
                         name={`sale_payments.${index}.comment`}
@@ -2560,12 +2567,11 @@ function CreateSale() {
                           <SelectValue placeholder="Выберите способ оплаты" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Наличные">Наличные</SelectItem>
-                          <SelectItem value="Карта">Карта</SelectItem>
-                          <SelectItem value="Click">Click</SelectItem>
-                          <SelectItem value="Перечисление">
-                            Перечисление
-                          </SelectItem>
+                          {paymentMethods.map((pm: any) => (
+                            <SelectItem key={pm.id} value={pm.name}>
+                              {pm.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </FormItem>

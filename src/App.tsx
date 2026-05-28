@@ -21,8 +21,12 @@ import StocksPage from "./core/pages/StocksPage";
 import CreateStock from "./core/pages/create-stock";
 import Layout from "./core/layout/Layout";
 import MeasurementsPage from "./core/pages/MeasurementsPage";
+import PaymentMethodsPage from "./core/pages/PaymentMethodsPage";
+import CreatePaymentMethod from "./core/pages/create-payment-method";
+import RolesPage from "./core/pages/RolesPage";
 import ShiftsPage from "./core/pages/ShiftsPage";
 import EditShiftPage from "./core/pages/EditShiftPage";
+import CreateShift from "./core/pages/CreateShift";
 import CreateMeasurement from "./core/pages/create-measurement";
 import CurrenciesPage from "./core/pages/CurrenciesPage";
 import CreateCurrency from "./core/pages/create-currency";
@@ -77,6 +81,10 @@ import LabelSizesPage from "./core/pages/LabelSizesPage";
 import CreateLabelSize from "./core/pages/create-label-size";
 import ChargeTypesPage from "./core/pages/ChargeTypesPage";
 import CreateChargeType from "./core/pages/CreateChargeType";
+import WriteoffReasonsPage from "./core/pages/WriteoffReasonsPage";
+import ExpenseCategoriesPage from "./core/pages/ExpenseCategoriesPage";
+import PenaltiesPage from "./core/pages/PenaltiesPage";
+import CreatePenalty from "./core/pages/CreatePenalty";
 import PrintBarcodePage from "./core/pages/PrintBarcodePage";
 import POSPage from "./core/pages/POSPage";
 import ProtectedRoute from "@/components/ProtectedRoute.tsx";
@@ -97,6 +105,16 @@ import StockDebtPaymentHistoryPage from "@/core/pages/StockDebtPaymentHistoryPag
 import EditStockEntry from "@/core/pages/EditStockEntry.tsx";
 import SupplierBalanceHistoryPage from "./core/pages/SupplierBalanceHistoryPage";
 import ActivityPage from "./core/pages/ActivityPage";
+import VariationOptionsPage from "./core/pages/VariationOptionsPage";
+import ClientTypesPage from "./core/pages/ClientTypesPage";
+import CreateClientType from "./core/pages/create-client-type";
+import ExchangeRatesPage from "./core/pages/ExchangeRatesPage";
+import CustomersPage from "./core/pages/CustomersPage";
+import CreateCustomer from "./core/pages/create-customer";
+import EditCustomer from "./core/pages/edit-customer";
+import CustomerBalanceHistoryPage from "./core/pages/CustomerBalanceHistoryPage";
+import StockEntriesPage from "./core/pages/StockEntriesPage";
+import CreateStockEntry from "./core/pages/create-stock-entry";
 import ProductMovementsPage from "./core/pages/ProductMovementsPage";
 import StockReturnsHistoryPage from "./core/pages/StockReturnsHistoryPage";
 import VehiclesPage from "./core/pages/VehiclesPage";
@@ -108,6 +126,10 @@ import EditDriver from "./core/pages/edit-driver";
 import VehicleIncomesPage from "./core/pages/VehicleIncomesPage";
 import CreateVehicleIncome from "./core/pages/create-vehicle-income";
 import EditVehicleIncome from "./core/pages/edit-vehicle-income";
+import PayoutsPage from "./core/pages/PayoutsPage";
+import CreatePayout from "./core/pages/create-payout";
+import EditPayout from "./core/pages/edit-payout";
+import LabelGeneratorPage from "./core/pages/LabelGeneratorPage";
 // import W9FormDemo from "./core/pages/W9FormDemo";
 // import CreateSalePos from "./core/pages/create-sale-2";
 
@@ -211,6 +233,14 @@ function App() {
                 }
               />
               <Route
+                path="/variation-options"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <VariationOptionsPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
                 path="/attributes"
                 element={
                   <PrivateRoute allowedRoles={["Администратор"]}>
@@ -247,6 +277,102 @@ function App() {
                 element={
                   <PrivateRoute allowedRoles={["Администратор"]}>
                     <MeasurementsPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/payment-methods/create"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <CreatePaymentMethod />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/payment-methods"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <PaymentMethodsPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/roles"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <RolesPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/client-types"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <ClientTypesPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/client-types/create"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <CreateClientType />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/exchange-rates"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <ExchangeRatesPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/customers"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <CustomersPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/customers/create"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <CreateCustomer />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/edit-customer/:id"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <EditCustomer />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/customers/:id/balance-history"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <CustomerBalanceHistoryPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/stock-entries"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <StockEntriesPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/stock-entries/create"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <CreateStockEntry />
                   </PrivateRoute>
                 }
               />
@@ -694,6 +820,40 @@ function App() {
                 }
               />
 
+              {/* Staff Payouts */}
+              <Route
+                path="/payouts"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <PayoutsPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/create-payout"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <CreatePayout />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/edit-payout/:id"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <EditPayout />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/label-generator"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор", "Продавец"]}>
+                    <LabelGeneratorPage />
+                  </PrivateRoute>
+                }
+              />
+
               {/* Routes accessible by both Администратор and Продавец */}
               <Route
                 path="/sales"
@@ -825,6 +985,38 @@ function App() {
                 }
               />
               <Route
+                path="/writeoff-reasons"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <WriteoffReasonsPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/expense-categories"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <ExpenseCategoriesPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/penalties"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <PenaltiesPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/create-penalty"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <CreatePenalty />
+                  </PrivateRoute>
+                }
+              />
+              <Route
                 path="/print-barcode/:productId"
                 element={
                   <PrivateRoute allowedRoles={["Администратор"]}>
@@ -868,6 +1060,14 @@ function App() {
                 element={
                   <PrivateRoute allowedRoles={["Администратор", "Продавец"]}>
                     <ShiftsPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/shifts/new"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор", "Продавец"]}>
+                    <CreateShift />
                   </PrivateRoute>
                 }
               />

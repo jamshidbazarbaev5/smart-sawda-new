@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ResourceTable } from '../helpers/ResourseTable';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ResourceForm } from '../helpers/ResourceForm';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { type ChargeType, useGetChargeTypes, useDeleteChargeType, useUpdateChargeType, useCreateChargeType } from '../api/charge-type';
 
@@ -15,12 +16,34 @@ const chargeTypeFields = (t: any) => [
     placeholder: t('placeholders.enter_name'),
     required: true,
   },
+  {
+    name: 'code',
+    label: t('forms.code'),
+    type: 'text',
+    placeholder: t('placeholders.enter_code'),
+  },
+  {
+    name: 'is_active',
+    label: t('forms.is_active'),
+    type: 'checkbox',
+  },
 ];
 
 const columns = (t: any) => [
   {
     header: t('forms.name'),
     accessorKey: 'name',
+  },
+  {
+    header: t('forms.code'),
+    accessorKey: 'code',
+    cell: (row: ChargeType) => row.code || '—',
+  },
+  {
+    header: t('forms.is_active'),
+    accessorKey: (row: ChargeType) => row.is_active !== false
+      ? <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">{t('common.yes')}</Badge>
+      : <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">{t('common.no')}</Badge>,
   },
 ];
 

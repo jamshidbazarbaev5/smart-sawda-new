@@ -3,10 +3,38 @@ import api from './api'
 
 import type { Attribute } from '@/types/attribute';
 
-// Types
+export interface CategoryV2 {
+  id: number;
+  name: string;
+  parent: number | null;
+  is_system: boolean;
+  is_active: boolean;
+  sell_from_stock: boolean;
+  is_recyclable: boolean;
+  recyclable_to: { id: number; name: string }[];
+  attributes_read?: Attribute[];
+}
+
+export interface CategoryWrite {
+  id?: number;
+  name: string;
+  parent?: number | null;
+  is_active?: boolean;
+  sell_from_stock?: boolean;
+  is_recyclable?: boolean;
+  recyclable_to?: number[];
+}
+
 export interface Category {
   id?: number;
-  category_name: string;
+  name: string;
+  category_name?: string;
+  parent?: number | null;
+  is_system?: boolean;
+  is_active?: boolean;
+  sell_from_stock?: boolean;
+  is_recyclable?: boolean;
+  recyclable_to?: { id: number; name: string }[];
   attributes?: number[];
   attributes_read?: Attribute[];
   store_write?: number;
@@ -37,10 +65,8 @@ export interface CategoryWithAttributesResponse {
   count: number;
 }
 
-// API endpoints
-const CATEGORY_URL = 'items/category/';
+const CATEGORY_URL = 'categories/';
 
-// Create category API hooks using the factory function
 export const {
   useGetResources: useGetCategories,
   useGetResource: useGetCategory,
@@ -49,14 +75,12 @@ export const {
   useDeleteResource: useDeleteCategory,
 } = createResourceApiHooks<Category>(CATEGORY_URL, 'categories');
 
-// Function to fetch categories with attributes
 export const fetchCategoriesWithAttributes = async (categoryName?: string): Promise<CategoryWithAttributesResponse> => {
-  const params = categoryName ? { category_name: categoryName } : {};
+  const params = categoryName ? { name: categoryName } : {};
   const response = await api.get<CategoryWithAttributesResponse>(CATEGORY_URL, { params });
   return response.data;
 };
 
-// Function to fetch all categories across all pages
 export const fetchAllCategories = async (): Promise<Category[]> => {
   let allCategories: Category[] = [];
   let currentPage = 1;
@@ -70,7 +94,6 @@ export const fetchAllCategories = async (): Promise<Category[]> => {
 
       allCategories = [...allCategories, ...response.data.results];
 
-      // Check if there's a next page
       hasMorePages = response.data.links.next !== null;
       currentPage++;
     } catch (error) {

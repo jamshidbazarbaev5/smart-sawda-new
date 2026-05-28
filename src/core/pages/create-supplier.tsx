@@ -30,8 +30,7 @@ export default function CreateSupplier() {
 
   const handleSubmit = async (data: Supplier) => {
     try {
-      const balanceType = (data as any).balance_type === 'USD' || (data as any).balance_type === 'UZS' ? (data as any).balance_type : 'USD';
-      await createSupplier.mutateAsync({ ...data, balance_type: balanceType } as any);
+      await createSupplier.mutateAsync(data as any);
       toast.success(t('messages.success.created', { item: t('table.supplier') }));
       navigate('/suppliers');
     } catch (error) {

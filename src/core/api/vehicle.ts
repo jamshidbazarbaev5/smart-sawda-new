@@ -1,17 +1,17 @@
 import { createResourceApiHooks } from '../helpers/createResourceApi';
 import api from './api';
 
-// Types
 export interface Vehicle {
   id?: number;
   name: string;
+  plate_number: string;
+  is_active: boolean;
   created_at?: string;
+  updated_at?: string;
 }
 
-// API endpoints
 const VEHICLE_URL = 'incomes/vehicles/';
 
-// Create vehicle API hooks using the factory function
 export const {
   useGetResources: useGetVehicles,
   useGetResource: useGetVehicle,
@@ -20,8 +20,12 @@ export const {
   useDeleteResource: useDeleteVehicle,
 } = createResourceApiHooks<Vehicle>(VEHICLE_URL, 'vehicles');
 
-// Function to fetch vehicle details
 export const fetchVehicleDetails = async (id: number): Promise<Vehicle> => {
   const response = await api.get<Vehicle>(`${VEHICLE_URL}${id}/`);
+  return response.data;
+};
+
+export const patchVehicle = async (id: number, data: Partial<Vehicle>): Promise<Vehicle> => {
+  const response = await api.patch<Vehicle>(`${VEHICLE_URL}${id}/`, data);
   return response.data;
 };

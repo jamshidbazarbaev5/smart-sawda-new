@@ -1148,7 +1148,7 @@ export default function ProductsPage() {
             <SelectContent>
               {categories.map((category) => (
                 <SelectItem key={category.id} value={String(category.id)}>
-                  {category.category_name}
+                  {category.name || category.category_name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -1164,7 +1164,7 @@ export default function ProductsPage() {
             <SelectContent>
               {measurementsList?.map((measurement) => (
                 <SelectItem key={measurement.id} value={String(measurement.id)}>
-                  {measurement.measurement_name}
+                  {measurement.name || measurement.measurement_name}
                 </SelectItem>
               ))}
             </SelectContent>

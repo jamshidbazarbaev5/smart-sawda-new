@@ -12,6 +12,17 @@ const chargeTypeFields = (t: any) => [
     placeholder: t('placeholders.enter_name'),
     required: true,
   },
+  {
+    name: 'code',
+    label: t('forms.code'),
+    type: 'text',
+    placeholder: t('placeholders.enter_code'),
+  },
+  {
+    name: 'is_active',
+    label: t('forms.is_active'),
+    type: 'checkbox',
+  },
 ];
 
 export default function CreateChargeType() {

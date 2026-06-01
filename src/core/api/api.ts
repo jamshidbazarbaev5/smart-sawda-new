@@ -19,7 +19,7 @@ import { useErrorStore, parseErrorMessage } from "../store/errorStore";
 
 // Create API instance
 const api: AxiosInstance = axios.create({
-  baseURL: 'https:smart.abata.uz/api/v2/',
+  baseURL: 'https://smart.abata.uz/api/v2/',
   headers: {
     "Content-Type": "application/json",
   },

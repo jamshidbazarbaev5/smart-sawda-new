@@ -31,7 +31,7 @@ const REFRESH_TOKEN_KEY = 'refresh_token';
 
 // API client
 const authApi = axios.create({
-  baseURL:  'https:smart.abata.uz/api/v2/',
+  baseURL:  'https://smart.abata.uz/api/v2/',
   headers: {
     'Content-Type': 'application/json',
   },

@@ -47,8 +47,8 @@ export default function ClientTypesPage() {
     ? typesData
     : typesData?.results || [];
   const totalPages =
-    !Array.isArray(typesData) && typesData?.total_pages
-      ? typesData.total_pages
+    !Array.isArray(typesData) && (typesData as any)?.total_pages
+      ? (typesData as any).total_pages
       : 1;
 
   const handleEdit = (item: ClientType) => {
@@ -62,8 +62,9 @@ export default function ClientTypesPage() {
     try {
       await updateClientType.mutateAsync({
         id: editingItem.id,
-        data: { name: editName, is_active: editIsActive },
-      });
+        name: editName,
+        is_active: editIsActive,
+      } as any);
       toast.success(t("messages.success.updated"));
       setEditingItem(null);
     } catch {

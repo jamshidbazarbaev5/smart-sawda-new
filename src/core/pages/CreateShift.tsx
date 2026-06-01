@@ -40,7 +40,7 @@ export default function CreateShift() {
   const stores: any[] = Array.isArray(storesData) ? storesData : (storesData as any)?.results || [];
 
   const { data: cashRegistersData } = useGetCashRegisters();
-  const cashRegisters: any[] = cashRegistersData || [];
+  const cashRegisters: any[] = cashRegistersData?.results || [];
 
   const { data: usersData } = useGetUsers({});
   const users: any[] = Array.isArray(usersData) ? usersData : (usersData as any)?.results || [];

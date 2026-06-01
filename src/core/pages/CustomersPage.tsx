@@ -12,7 +12,6 @@ import { useGetStores } from "../api/store";
 import { useGetPaymentMethods } from "../api/payment-methods";
 import { useGetCurrencies } from "../api/currency";
 import { ResourceTable } from "../helpers/ResourseTable";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

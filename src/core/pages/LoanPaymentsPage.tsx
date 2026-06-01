@@ -2,14 +2,13 @@ import { useCallback, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, Banknote, FileText } from 'lucide-react';
+import { ArrowLeft, FileText } from 'lucide-react';
 import { ResourceTable } from '../helpers/ResourseTable';
 import { ResourceForm } from '../helpers/ResourceForm';
 import { type LoanPayment, useGetLoanPayments, useCreateLoanPayment, useDeleteLoanPayment } from '../api/loanpayment';
 import { useGetLoan } from '../api/loan';
 import { useGetStores } from '../api/store';
 import { useGetPaymentMethods } from '../api/payment-methods';
-import { Button } from '@/components/ui/button';
 import { FaTimes } from 'react-icons/fa';
 
 export default function LoanPaymentsPage() {

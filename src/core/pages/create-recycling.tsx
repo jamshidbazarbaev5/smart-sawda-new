@@ -484,7 +484,7 @@ export default function CreateRecycling() {
         const label = categoryName
           ? `${categoryName} - ${product.product_name}`
           : product.product_name;
-        setSelectedProductLabels((prev) => ({ ...prev, [selectedId]: label }));
+        setSelectedProductLabels((prev) => ({ ...prev, [selectedId]: label || '' }));
       }
     }
 

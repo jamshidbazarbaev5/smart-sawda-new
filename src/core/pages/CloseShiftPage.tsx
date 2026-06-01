@@ -7,7 +7,7 @@ import { ArrowLeft, Save, Printer } from "lucide-react";
 import {
   shiftsApi,
   type ShiftSummary,
-  type CloseShiftData,
+  type CloseShiftDataV1,
 } from "@/core/api/shift";
 import { useCurrentUser } from "@/core/hooks/useCurrentUser";
 import { useAuth } from "@/core/context/AuthContext";
@@ -111,7 +111,7 @@ const CloseShiftPage = () => {
       // Get the actual shift ID from summary data
       const actualShiftId = summary.shift_id;
 
-      const closeData: CloseShiftData = {
+      const closeData: CloseShiftDataV1 = {
         payments: summary.remaining.by_type.map(p => ({
           payment_method: p.payment_method,
           actual: p.amount

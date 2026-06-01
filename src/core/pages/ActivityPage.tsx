@@ -27,7 +27,7 @@ import { useGetExpenseNames } from '../api/expense-name';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
-import { shiftsApi, type Shift } from '../api/shift';
+import { shiftsApi, type ShiftV1 } from '../api/shift';
 
 import {
   SmartphoneNfc,
@@ -391,7 +391,7 @@ export default function ActivityPage() {
   const clients = Array.isArray(clientsData) ? clientsData : clientsData?.results || [];
   const expenseNames = Array.isArray(expenseNamesData) ? expenseNamesData : expenseNamesData?.results || [];
   const users = Array.isArray(usersData) ? usersData : usersData?.results || [];
-  const shifts: Shift[] = shiftsData?.results || [];
+  const shifts: ShiftV1[] = shiftsData?.results || [];
 
 
   // Build params based on active tab

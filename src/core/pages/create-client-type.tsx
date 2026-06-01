@@ -27,6 +27,7 @@ export default function CreateClientType() {
       await createClientType.mutateAsync({
         name: name.trim(),
         is_active: isActive,
+        is_system: false,
       });
       toast.success(t("messages.success.created"));
       navigate("/client-types");

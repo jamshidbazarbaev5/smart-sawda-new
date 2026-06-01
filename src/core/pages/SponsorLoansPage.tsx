@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, Banknote, Calendar, CheckCircle2, XCircle, FileText } from 'lucide-react';
+import { ArrowLeft, Banknote, CheckCircle2, XCircle, FileText } from 'lucide-react';
 import { ResourceTable } from '../helpers/ResourseTable';
 import { ResourceForm } from '../helpers/ResourceForm';
 import { type Loan, useGetLoans, useCreateLoan, useDeleteLoan } from '../api/loan';

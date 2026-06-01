@@ -89,7 +89,7 @@ export default function EditExpensePage() {
       await updateExpense.mutateAsync({
         id: Number(id),
         ...translatedData,
-      });
+      } as any);
       toast.success(t('messages.success.expense_updated'));
       navigate('/expense');
     } catch (error) {
@@ -101,10 +101,10 @@ export default function EditExpensePage() {
   }
 
   const defaultValues = {
-    store_write: expense.store_read?.id,
-    expense_name_write: expense.expense_name_read?.id,
+    store_write: expense.store ?? undefined,
+    expense_name_write: expense.category ?? undefined,
     amount: expense.amount,
-    payment_method: expense.payment_method,
+    payment_method: String(expense.payment_method),
     comment: expense.comment
   };
 

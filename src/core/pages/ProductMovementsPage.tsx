@@ -106,7 +106,7 @@ export default function ProductMovementsPage() {
   // Handle product selection
   const handleSelectProduct = (product: Product) => {
     setSelectedProductId(product.id);
-    setSelectedProductName(product.product_name);
+    setSelectedProductName(product.product_name || '');
     setProductSearchQuery('');
     setShowProductDropdown(false);
   };

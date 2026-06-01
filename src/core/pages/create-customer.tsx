@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCreateCustomer } from "../api/customer";
 import { useGetClientTypes } from "../api/client-type";
-import { useGetCurrencies } from "../api/currency";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +24,6 @@ export default function CreateCustomer() {
   const navigate = useNavigate();
   const createCustomer = useCreateCustomer();
   const { data: clientTypesData } = useGetClientTypes({});
-  const { data: currenciesData } = useGetCurrencies({});
 
   const [name, setName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -43,9 +41,7 @@ export default function CreateCustomer() {
   const clientTypes = Array.isArray(clientTypesData)
     ? clientTypesData
     : clientTypesData?.results || [];
-  const currencies = Array.isArray(currenciesData)
-    ? currenciesData
-    : currenciesData?.results || [];
+
 
   const formatUzPhone = (value: string) => {
     let digits = value.replace(/\D/g, "");
@@ -65,16 +61,16 @@ export default function CreateCustomer() {
         name: name.trim(),
         phone_number: phoneNumber,
         customer_type: customerType ? Number(customerType) : null,
-        company_name: companyName || undefined,
-        email: email || undefined,
-        credit_limit: creditLimit || undefined,
-        discount_percent: discountPercent || undefined,
-        tax_id: taxId || undefined,
-        address: address || undefined,
-        notes: notes || undefined,
+        company_name: companyName || '',
+        email: email || '',
+        credit_limit: creditLimit || '',
+        discount_percent: discountPercent || '',
+        tax_id: taxId || '',
+        address: address || '',
+        notes: notes || '',
         source: source || "pos",
         is_active: isActive,
-      });
+      } as any);
       toast.success(t("messages.success.created"));
       navigate("/customers");
     } catch {

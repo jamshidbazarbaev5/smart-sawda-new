@@ -10,10 +10,7 @@ import {
 import {
   Wallet,
   CreditCard,
-  SmartphoneNfc,
-  Package,
   Store,
-  User2,
 } from 'lucide-react';
 
 export default function IncomeDetailsPage() {
@@ -36,7 +33,9 @@ export default function IncomeDetailsPage() {
     );
   }
 
-  if (!income || income.source !== 'Продажа') return null;
+  if (!income) return null;
+
+  const source = income.sale ? 'Продажа' : income.debt_payment ? 'Погашение долга' : 'Прочее';
 
   const formatCurrency = (amount: string | number) => {
     return new Intl.NumberFormat('ru-RU').format(Number(amount));
@@ -60,14 +59,11 @@ export default function IncomeDetailsPage() {
       case 'Карта':
         return <CreditCard className="h-4 w-4 text-blue-600" />;
       case 'Click':
-        return <SmartphoneNfc className="h-4 w-4 text-purple-600" />;
+        return <Wallet className="h-4 w-4 text-purple-600" />;
       default:
         return null;
     }
   };
-
-  const payments = income.description.Payments || [];
-  const items = income.description.Items || [];
 
   return (
     <div className="container mx-auto py-8">
@@ -87,17 +83,19 @@ export default function IncomeDetailsPage() {
             <div className="space-y-4">
               <div>
                 <h3 className="text-sm text-gray-500">{t('forms.store')}</h3>
-                <p className="font-medium">{income.store_read?.name || '-'}</p>
+                <p className="font-medium">{income.store_name || '-'}</p>
               </div>
               <div>
                 <h3 className="text-sm text-gray-500">{t('forms.worker')}</h3>
-                {/* <p className="font-medium">{income.worker_read?.name || income.description.Worker || '-'}</p> */}
+                <p className="font-medium">#{income.worker}</p>
               </div>
               <div>
                 <h3 className="text-sm text-gray-500">{t('forms.date')}</h3>
-                <p className="font-medium">
-                  {formatDate(income.description['Sold Date'] || income.description['Timestamp'] || income.timestamp)}
-                </p>
+                <p className="font-medium">{formatDate(income.timestamp)}</p>
+              </div>
+              <div>
+                <h3 className="text-sm text-gray-500">{t('forms.type')}</h3>
+                <p className="font-medium">{source}</p>
               </div>
             </div>
           </CardContent>
@@ -106,79 +104,37 @@ export default function IncomeDetailsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User2 className="w-5 h-5 text-emerald-500" />
+              <Wallet className="w-5 h-5 text-emerald-500" />
               {t('forms.payment_info')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm text-gray-500">{t('forms.client')}</h3>
-                <p className="font-medium">{income.description.Client || '-'}</p>
-              </div>
-              <div>
                 <h3 className="text-sm text-gray-500">{t('forms.total_amount')}</h3>
-                <p className="font-medium text-emerald-600">{formatCurrency(income.description.Amount)} UZS</p>
+                <p className="font-medium text-emerald-600">{formatCurrency(income.total_amount)} UZS</p>
               </div>
               <div>
                 <h3 className="text-sm text-gray-500">{t('forms.payment_method')}</h3>
                 <div className="space-y-1">
-                  {payments.map((payment: any, index: number) => (
+                  {income.payments?.map((payment: any, index: number) => (
                     <div key={index} className="flex items-center gap-2">
-                      {getPaymentIcon(payment.Method)}
-                      <span>{payment.Method}: {formatCurrency(payment.Amount)} UZS</span>
+                      {getPaymentIcon(payment.payment_method?.name)}
+                      <span>{payment.payment_method?.name}: {formatCurrency(payment.amount)} UZS</span>
                     </div>
                   ))}
                 </div>
               </div>
+              {income.description && (
+                <div>
+                  <h3 className="text-sm text-gray-500">{t('forms.description')}</h3>
+                  <p className="font-medium">{income.description}</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-emerald-500" />
-            {t('forms.items')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2">{t('forms.product')}</th>
-                  <th className="text-right py-2">{t('forms.quantity')}</th>
-                  <th className="text-right py-2">{t('forms.selling_method')}</th>
-                  <th className="text-right py-2">{t('forms.subtotal')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item: any, index: number) => (
-                  <tr key={index} className="border-b">
-                    <td className="py-2">
-                      <div className="flex items-start gap-2">
-                        <Package className="w-4 h-4 text-gray-500 mt-1" />
-                        <div>
-                          <div className="font-medium">{item.Product}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="text-right py-2">{item.Quantity}</td>
-                    <td className="text-right py-2">{item['Selling Method']}</td>
-                    <td className="text-right py-2">{formatCurrency(item.Subtotal)} UZS</td>
-                  </tr>
-                ))}
-                <tr className="font-bold">
-                  <td colSpan={3} className="text-right py-2">{t('forms.total_amount')}</td>
-                  <td className="text-right py-2">{formatCurrency(income.description.Amount)} UZS</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import { createResourceApiHooks } from '../helpers/createResourceApi';
-import api from './api';
 
 export interface VariationValue {
   id?: number;

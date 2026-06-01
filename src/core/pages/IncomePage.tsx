@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import { useGetIncomes } from "../api/income";
 import { useGetUsers } from "../api/user";
 import { ResourceTable } from "../helpers/ResourseTable";
@@ -29,7 +28,6 @@ import { format } from "date-fns";
 
 export default function IncomePage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [selectedStore, setSelectedStore] = useState("all");
   const [selectedWorker, setSelectedWorker] = useState("all");

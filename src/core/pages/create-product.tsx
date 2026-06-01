@@ -25,7 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Plus, Trash2, Package, Settings, Layers, Boxes, Tags, Info, DollarSign, ChevronRight } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Package, Settings, Layers, Boxes, Tags, Info, DollarSign } from "lucide-react";
 
 interface AttributeValue {
   attribute_id: number;
@@ -67,7 +67,7 @@ export default function CreateProduct() {
   // Initial stock state
   const [showInitialStock, setShowInitialStock] = useState(false);
   const [initialStore, setInitialStore] = useState<number | "">("");
-  const [initialSupplier, setInitialSupplier] = useState<number | null>(null);
+  const [initialSupplier] = useState<number | null>(null);
   const [initialTotalAmount, setInitialTotalAmount] = useState("0.00");
   const [initialIsDebt, setInitialIsDebt] = useState(false);
   const [initialNote, setInitialNote] = useState("");
@@ -80,7 +80,7 @@ export default function CreateProduct() {
   const { data: measurementsData } = useGetMeasurements({});
   const { data: storesData } = useGetStores({});
   const { data: frontendConfig } = useFrontendConfig();
-  const flags = frontendConfig?.shop_flags;
+  const flags = (frontendConfig as any)?.shop_flags;
 
   const [categories, setCategories] = useState<any[]>([]);
 

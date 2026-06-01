@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 import { Plus, Trash2, Pencil, List } from 'lucide-react';
 import {
   type VariationOption,
-  type VariationValue,
   useGetVariationOptions,
   useCreateVariationOption,
   useUpdateVariationOption,

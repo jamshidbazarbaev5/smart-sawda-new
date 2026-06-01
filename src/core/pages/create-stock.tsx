@@ -585,7 +585,7 @@ export default function CreateStock() {
         const metadata = {
           conversion_factor: conversionFactor,
           exchange_rate: exchangeRate,
-          is_base_currency: response.currency?.is_base || false,
+            is_base_currency: (response.currency as any)?.is_base || false,
         };
 
         // Update item with calculation results

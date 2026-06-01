@@ -4,7 +4,6 @@ import {
   type CurrencyRate,
   useGetCurrencyRates,
   useCreateCurrencyRate,
-  useUpdateCurrencyRate,
   useDeleteCurrencyRate,
 } from "../api/currency-rate";
 import { useGetCurrencies } from "../api/currency";
@@ -54,13 +53,12 @@ export default function ExchangeRatesPage() {
   });
   const { data: currenciesData } = useGetCurrencies({});
   const createCurrencyRate = useCreateCurrencyRate();
-  const updateCurrencyRate = useUpdateCurrencyRate();
   const deleteCurrencyRate = useDeleteCurrencyRate();
 
   const rates = Array.isArray(ratesData) ? ratesData : ratesData?.results || [];
   const totalPages =
-    !Array.isArray(ratesData) && ratesData?.total_pages
-      ? ratesData.total_pages
+    !Array.isArray(ratesData) && (ratesData as any)?.total_pages
+      ? (ratesData as any).total_pages
       : 1;
 
   const currencies = Array.isArray(currenciesData)
@@ -81,7 +79,7 @@ export default function ExchangeRatesPage() {
       await createCurrencyRate.mutateAsync({
         currency: Number(selectedCurrency),
         rate: rateValue,
-      });
+      } as any);
       toast.success(t("messages.success.created"));
       setCreateOpen(false);
       setSelectedCurrency("");

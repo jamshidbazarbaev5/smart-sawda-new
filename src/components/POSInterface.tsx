@@ -36,7 +36,7 @@ import { useGetClients, useCreateClient } from "@/core/api/client";
 import { useGetChargeTypes } from "@/core/api/charge-type";
 import type { User } from "@/core/api/user";
 import { OpenShiftForm } from "./OpenShiftForm";
-import { useCreateSale, type Sale } from "@/core/api/sale";
+import { useCreateSale } from "@/core/api/sale";
 import {
   saleReceiptService,
   type SaleData,
@@ -604,7 +604,7 @@ const POSInterfaceCore = () => {
                     quantity: totalQuantity,
                     total: price * totalQuantity,
                     product: product,
-                    barcode: product.barcode,
+              barcode: product.barcode ?? undefined,
                     selectedUnit: defaultUnit || null,
                     stock: stock,
                     stockId: stock.id,
@@ -642,7 +642,7 @@ const POSInterfaceCore = () => {
               quantity: availableQuantity,
               total: price * availableQuantity,
               product: product,
-              barcode: product.barcode,
+              barcode: product.barcode ?? undefined,
               selectedUnit: defaultUnit || null,
             };
 
@@ -790,7 +790,7 @@ const POSInterfaceCore = () => {
               quantity: defaultQty,
               total: price * defaultQty,
               product: product,
-              barcode: product.barcode,
+              barcode: product.barcode ?? undefined,
               selectedUnit: defaultUnit || null,
               stock: stock,
               stockId: stock?.id,
@@ -3094,10 +3094,10 @@ const POSInterfaceCore = () => {
                         {users
                             .filter((user) => {
                               const extendedUser = user as ExtendedUser;
-                              return (
-                                  (user.role === "Продавец" ||
-                                      user.role === "Администратор") &&
-                                  extendedUser.store_read
+                               return (
+                                   ((user as any).role_name === "Продавец" ||
+                                       (user as any).role_name === "Администратор") &&
+                                   extendedUser.store_read
                               );
                             })
                             .map((user) => (
@@ -4043,12 +4043,12 @@ const POSInterfaceCore = () => {
                         // Also create API-compatible payload for backend
                         // @ts-ignore
                         // @ts-ignore
-                        const saleApiPayload: Sale = {
+                        const saleApiPayload: any = {
                           store: currentUser?.store_read?.id || 1,
                           ...(selectedSeller && { sold_by: selectedSeller }),
                           ...(selectedClient && { client: selectedClient }),
                           payment_method:
-                              paymentMethods[0]?.payment_method || "Наличные",
+                              (paymentMethods[0] as any)?.payment_method || "Наличные",
                           sale_items: cartProducts.map((item) => ({
                             product_write: item.productId,
                             selling_unit: item?.selectedUnit?.id,
@@ -4828,7 +4828,7 @@ const POSInterfaceCore = () => {
                   setProductForStockSelection(null);
                 }}
                 productId={productForStockSelection.id!}
-                productName={productForStockSelection.product_name}
+                productName={productForStockSelection.product_name ?? ''}
                 onStockSelect={handleStockSelect}
             />
         )}

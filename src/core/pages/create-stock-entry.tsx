@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useState, useRef } from "react";
-import { useCreateStockEntry, type StockEntryStockLotInput } from "../api/stock-entry";
+import { useCreateStockEntry } from "../api/stock-entry";
 import { useGetStores } from "../api/store";
 import { useGetAllSuppliers } from "../api/supplier";
 import { useGetCurrencies } from "../api/currency";
@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Package, Plus, Trash2, Search } from "lucide-react";
+import { ArrowLeft, Package, Plus, Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 interface StockLine {
@@ -65,7 +65,7 @@ export default function CreateStockEntry() {
   const currencies: any[] = Array.isArray(currenciesData) ? currenciesData : (currenciesData as any)?.results || [];
 
   const { data: measurementsData } = useGetMeasurements({});
-  const allMeasurements: any[] = measurementsData?.results || [];
+  const allMeasurements: any[] = Array.isArray(measurementsData) ? measurementsData : (measurementsData as any)?.results || [];
 
   const [productSearchTerms, setProductSearchTerms] = useState<Record<number, string>>({});
   const [activeSearchIndex, setActiveSearchIndex] = useState<number | null>(null);

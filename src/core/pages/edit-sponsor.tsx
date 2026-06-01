@@ -6,7 +6,6 @@ import { ArrowLeft, User, Phone, FileText, ToggleLeft, Calendar } from 'lucide-r
 import {
   useGetSponsor,
   useUpdateSponsor,
-  type Sponsor,
 } from '../api/sponsors';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';

@@ -79,21 +79,19 @@ export default function EditCustomer() {
     try {
       await updateCustomer.mutateAsync({
         id: Number(id),
-        data: {
-          name: name.trim(),
-          phone_number: phoneNumber,
-          customer_type: customerType ? Number(customerType) : null,
-          company_name: companyName || undefined,
-          email: email || undefined,
-          credit_limit: creditLimit || undefined,
-          discount_percent: discountPercent || undefined,
-          tax_id: taxId || undefined,
-          address: address || undefined,
-          notes: notes || undefined,
-          source: source || "pos",
-          is_active: isActive,
-        },
-      });
+        name: name.trim(),
+        phone_number: phoneNumber,
+        customer_type: customerType ? Number(customerType) : null,
+        company_name: companyName || undefined,
+        email: email || undefined,
+        credit_limit: creditLimit || undefined,
+        discount_percent: discountPercent || undefined,
+        tax_id: taxId || undefined,
+        address: address || undefined,
+        notes: notes || undefined,
+        price_list: null,
+        is_active: isActive,
+      } as any);
       toast.success(t("messages.success.updated"));
       navigate("/customers");
     } catch {

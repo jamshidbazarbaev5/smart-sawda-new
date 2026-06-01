@@ -11,6 +11,7 @@ export interface StockEntryStockLotInput {
 }
 
 export interface StockEntryCreateInput {
+  id?: number;
   entry_number?: string | null;
   supplier?: number | null;
   store: number;

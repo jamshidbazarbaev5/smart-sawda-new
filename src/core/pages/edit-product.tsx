@@ -68,7 +68,7 @@ export default function EditProduct() {
 
   const [showInitialStock, setShowInitialStock] = useState(false);
   const [initialStore, setInitialStore] = useState<number | "">("");
-  const [initialSupplier, setInitialSupplier] = useState<number | null>(null);
+  const [initialSupplier] = useState<number | null>(null);
   const [initialTotalAmount, setInitialTotalAmount] = useState("0.00");
   const [initialIsDebt, setInitialIsDebt] = useState(false);
   const [initialNote, setInitialNote] = useState("");
@@ -80,7 +80,7 @@ export default function EditProduct() {
   const { data: measurementsData } = useGetMeasurements({});
   const { data: storesData } = useGetStores({});
   const { data: frontendConfig } = useFrontendConfig();
-  const flags = frontendConfig?.shop_flags;
+  const flags = (frontendConfig as any)?.shop_flags;
 
   const [categories, setCategories] = useState<any[]>([]);
 

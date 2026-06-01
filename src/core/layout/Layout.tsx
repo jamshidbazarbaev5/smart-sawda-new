@@ -119,7 +119,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       await createCurrencyRate.mutateAsync({
         currency: parseInt(selectedCurrency),
         rate: currencyRate,
-      });
+      } as any);
 
       toast.success("Currency rate created successfully");
       setCurrencyModalOpen(false);

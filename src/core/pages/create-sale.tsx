@@ -456,12 +456,12 @@ function CreateSale() {
         const newProduct: ProductInCart = {
           id: Date.now(),
           productId: product.id || 0,
-          name: product.product_name,
+          name: product.product_name || '',
           price: price,
           quantity: "" as any,
           total: 0,
           product: product,
-          barcode: product.barcode,
+          barcode: product.barcode ?? undefined,
           selectedUnit: defaultUnit || null,
         };
 
@@ -615,12 +615,12 @@ function CreateSale() {
     newCartProducts[index] = {
       id: Date.now() + index,
       productId: selectedProduct.id || 0,
-      name: selectedProduct.product_name,
+      name: selectedProduct.product_name || '',
       price: price,
       quantity: "" as any,
       total: 0,
       product: selectedProduct,
-      barcode: selectedProduct.barcode,
+      barcode: selectedProduct.barcode ?? undefined,
       selectedUnit: defaultUnit,
       stock: stock,
       stockId: stock?.id,
@@ -1143,7 +1143,7 @@ function CreateSale() {
         sale_debt: (formattedData as any).sale_debt,
       });
 
-      await createSale.mutateAsync(formattedData);
+      await createSale.mutateAsync(formattedData as any);
       toast.success(t("messages.created_successfully"));
       setIsFromInsufficientBalanceModal(false);
       navigate("/sales");
@@ -2751,7 +2751,7 @@ function CreateSale() {
             setPendingProductIndex(-1);
           }}
           productId={productForStockSelection.id!}
-          productName={productForStockSelection.product_name}
+          productName={productForStockSelection.product_name ?? ''}
           onStockSelect={handleStockSelect}
         />
       )}

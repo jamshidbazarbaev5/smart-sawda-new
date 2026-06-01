@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   type CustomerBalanceHistoryEntry,
   useGetCustomerBalanceHistory,
@@ -9,8 +9,6 @@ import { useGetCustomers } from "../api/customer";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +29,7 @@ import {
   Search,
   Calendar,
 } from "lucide-react";
-import { format } from "date-fns";
+
 
 const typeColors: Record<string, string> = {
   topup: "text-green-600 bg-green-50",
@@ -49,7 +47,6 @@ const typeIcons: Record<string, any> = {
 
 export default function CustomerBalanceHistoryPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { id } = useParams();
   const [page, setPage] = useState(1);
   const [customerId, setCustomerId] = useState(id || "");

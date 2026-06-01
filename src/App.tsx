@@ -105,6 +105,8 @@ import StockDebtPaymentHistoryPage from "@/core/pages/StockDebtPaymentHistoryPag
 import EditStockEntry from "@/core/pages/EditStockEntry.tsx";
 import SupplierBalanceHistoryPage from "./core/pages/SupplierBalanceHistoryPage";
 import ActivityPage from "./core/pages/ActivityPage";
+import ActivityLogsPage from "./core/pages/ActivityLogsPage";
+import ActivityLogDetailPage from "./core/pages/ActivityLogDetailPage";
 import VariationOptionsPage from "./core/pages/VariationOptionsPage";
 import ClientTypesPage from "./core/pages/ClientTypesPage";
 import CreateClientType from "./core/pages/create-client-type";
@@ -614,6 +616,22 @@ function App() {
                 element={
                   <PrivateRoute allowedRoles={["Администратор", "Продавец"]}>
                     <ActivityPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/activity-logs"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <ActivityLogsPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/activity-logs/:id"
+                element={
+                  <PrivateRoute allowedRoles={["Администратор"]}>
+                    <ActivityLogDetailPage />
                   </PrivateRoute>
                 }
               />

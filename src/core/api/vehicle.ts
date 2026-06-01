@@ -10,7 +10,7 @@ export interface Vehicle {
   updated_at?: string;
 }
 
-const VEHICLE_URL = 'incomes/vehicles/';
+const VEHICLE_URL = 'vehicles/';
 
 export const {
   useGetResources: useGetVehicles,

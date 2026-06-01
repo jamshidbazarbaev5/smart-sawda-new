@@ -26,6 +26,7 @@ import {
   Car,
   IdCard,
   Wallet,
+  Activity,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
@@ -272,6 +273,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       // Product Movements - only for superadmin and admin
       ...(currentUser?.is_superuser || currentUser?.role === "Администратор"
         ? [{ icon: ArrowLeftRight, label: "Движение товаров", href: "/product-movements" }]
+        : []),
+      // Activity Logs (audit trail) - only for superadmin and admin
+      ...(currentUser?.is_superuser || currentUser?.role === "Администратор"
+        ? [{ icon: Activity, label: "Журнал активности", href: "/activity-logs" }]
         : []),
       { icon: UserCheck, label: t("navigation.clients"), href: "/clients" },
       { icon: ShoppingBag, label: t("navigation.debt"), href: "/debts" },

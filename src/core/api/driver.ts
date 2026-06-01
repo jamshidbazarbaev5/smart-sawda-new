@@ -10,7 +10,7 @@ export interface Driver {
   updated_at?: string;
 }
 
-const DRIVER_URL = 'incomes/drivers/';
+const DRIVER_URL = 'drivers/';
 
 export const {
   useGetResources: useGetDrivers,

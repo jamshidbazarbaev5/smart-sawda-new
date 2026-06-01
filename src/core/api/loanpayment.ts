@@ -3,13 +3,15 @@ import { createResourceApiHooks } from '../helpers/createResourceApi';
 export interface LoanPayment {
   id?: number;
   loan: number;
+  store?: number | null;
   amount: string;
-  notes: string;
-  payment_method: string;
-  paid_at: string;
+  exchange_rate?: string;
+  payment_method: { id: number; name: string };
+  notes?: string;
+  created_at?: string;
 }
 
-const LOAN_PAYMENT_URL = 'loans/payments/';
+const LOAN_PAYMENT_URL = 'loan-payments/';
 
 export const {
   useGetResources: useGetLoanPayments,

@@ -1,30 +1,39 @@
-import api from './api';
+import { createResourceApiHooks } from '../helpers/createResourceApi';
 
 export interface Loan {
-  id: number;
-  sponsor_read: {
-    id: number;
-    name: string;
-    phone_number: string;
-  };
-  is_paid: boolean;
+  id?: number;
+  sponsor: number;
+  sponsor_name?: string;
+  store?: number | null;
+  store_name?: string;
+  payment_method?: number | null;
   total_amount: string;
-  currency: string;
+  remaining_balance?: string;
+  currency?: number | null;
+  exchange_rate?: string | null;
+  due_date?: string | null;
+  is_paid?: boolean;
+  notes?: string;
+  payments?: LoanPaymentInline[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface LoanPaymentInline {
+  id: number;
+  loan: number;
+  amount: string;
+  payment_method: { id: number; name: string };
+  notes?: string;
   created_at: string;
-  due_date: string;
-  remainder: string;
-  overpayment_unused: string;
 }
 
-export async function createLoan(sponsorId: number, data: { total_amount: number; currency: string; due_date: string; sponsor_write: number }) {
-  const response = await api.post(`/sponsors/${sponsorId}/loans/`, data);
-  return response.data;
-}
+const LOAN_URL = 'loans/';
 
-export async function fetchLoans(sponsorId: number, currency?: string, is_paid?: boolean): Promise<Loan[]> {
-  const params: any = {};
-  if (currency) params.currency_code = currency;
-  if (typeof is_paid === 'boolean') params.is_paid = is_paid;
-  const response = await api.get(`/sponsors/${sponsorId}/loans`, { params });
-  return response.data.results;
-}
+export const {
+  useGetResources: useGetLoans,
+  useGetResource: useGetLoan,
+  useCreateResource: useCreateLoan,
+  useUpdateResource: useUpdateLoan,
+  useDeleteResource: useDeleteLoan,
+} = createResourceApiHooks<Loan>(LOAN_URL, 'loans');

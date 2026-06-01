@@ -27,14 +27,12 @@
     "revaluation.new_min_price": "Минимал баҳасы",
     "revaluation.comment": "Түсиник"
   },
-  "table":{
-    "products":"Товарлар",
-    "date":"Күн",
-    "new_selling_price":"Таза сату бахасы",
-    "new_min_price":"Таза мин бахасы"
-
+  "table": {
+    "products": "Товарлар",
+    "date": "Күн",
+    "new_selling_price": "Таза сату бахасы",
+    "new_min_price": "Таза мин бахасы"
   },
-
   "dashboard": {
     "other": "Басқалар",
     "clients": "Клиентлер",
@@ -192,7 +190,7 @@
     "payment_details": "Толық мағлыўмат",
     "payment_history": "Төлемлер тарийхы",
     "max_amount": "Максимал сумма",
-    "saving": "Сақлаў",
+    "saving": "Сақлаў...",
     "amount": "Сумма",
     "add_balance": "Балансты арттырыў",
     "total_payments": "Барлық төлемлер",
@@ -219,7 +217,7 @@
     "refund_quantity": "Қайтарыў саны",
     "select_items_for_refund": "Қайтарыў ушын товарларды сайлаң",
     "processing": "Ислеў",
-    "paid2": "Төленген",
+    "paid2": "Сатылған",
     "pay": "Төлем усылы",
     "enter_price_per_tone": "Тонна ушын баҳа киргизиң",
     "price_per_tone": "Тонна ушын баҳа",
@@ -269,9 +267,7 @@
     "details": "Толық мағлыўмат",
     "on_credit": "Қарызға",
     "save": "Сақлаў",
-    "cancel": "Бийкар етиў",
     "edit": "Өзгертиў",
-    "delete": "Өшириў",
     "create": "жаратыў",
     "active": "Актив",
     "inactive": "Актив емес",
@@ -330,7 +326,6 @@
     "selected": "Сайланған",
     "updating": "Жаңалаў...",
     "paid": "Қарыз өтелген",
-    "paid2": "Сатылған",
     "closed": "Жабылған",
     "Save": "Сақлаў",
     "Saving...": "Сақлаў...",
@@ -369,7 +364,6 @@
     "unpaid": "Төленбеген",
     "add_attribute": "Атрибут қосыў",
     "back_to_list": "Дизимге қайтыў",
-    "saving": "Сақлаў...",
     "stock_entries": "Товарлар киримлери",
     "no_data": "Мағлыўмат жоқ",
     "date": "Күн",
@@ -412,7 +406,6 @@
     "incomplete": "Тамамланбаған",
     "select_product_placeholder": "Товар сайлаң...",
     "duplicate": "Көшириў",
-    "delete": "Өшириў",
     "item_duplicated": "Товар көширилди",
     "must_have_one_item": "Кеминде бир товар болыўы керек",
     "no_items_selected": "Товарлар сайланбаған",
@@ -583,7 +576,6 @@
     "export": "Экспорт",
     "print": "Басып шығарыў",
     "saving": "Сақлаў...",
-    "preview": "Алдын ала көриў",
     "noComponents": "Компонентлер еле қосылмаған",
     "useControlsPanel": "Компонентлерди қосыў ушын басқарыў панелин пайдаланың",
     "templateSavedSuccessfully": "Үлги табыслы сақланды!",
@@ -812,5 +804,28 @@
   },
   "edit_product": {
     "subtitle": "Товарды өзгертиў"
-  }
+  },
+  "loans.subtitle": "Sponsor qarzları",
+  "loans.total_amount": "Ulıwma summa",
+  "loans.paid": "Tólendi",
+  "loans.unpaid": "Tólenbegen",
+  "loans.create": "Qarz jaratıw",
+  "loans.payments": "Tólemler",
+  "loans.payments_for": "Qarz tólemleri",
+  "loans.add_payment": "Tólem qosıw",
+  "forms.remaining_balance": "Qaldıq",
+  "forms.due_date": "Múddet",
+  "forms.status": "Status",
+  "forms.notes": "Eskertiwler",
+  "forms.name": "Atı",
+  "forms.created_at": "Dóretilgen waqıt",
+  "forms.total_amount": "Summa",
+  "common.records": "jazıw",
+  "common.active_hint": "Aktiv",
+  "common.inactive_hint": "Aktiv emes",
+  "common.paid": "Tólengen",
+  "common.unpaid": "Tólenbegen",
+  "common.active": "Aktiv",
+  "common.inactive": "Aktiv emes",
+  "navigation.loans": "Qarzlar"
 }
